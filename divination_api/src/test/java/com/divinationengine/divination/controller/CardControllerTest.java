@@ -3,7 +3,6 @@ package com.divinationengine.divination.controller;
 import com.divinationengine.divination.models.Card;
 import com.divinationengine.divination.models.CardType;
 import com.divinationengine.divination.service.CardService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -21,6 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CardController.class)
+@SuppressWarnings("null")
 class CardControllerTest {
 
     @Autowired
@@ -28,9 +28,6 @@ class CardControllerTest {
 
     @MockBean
     private CardService cardService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Test
     void getAllCards_ShouldReturnAllCards() throws Exception {

@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class ReadingServiceTest {
 
     @Mock
@@ -78,7 +79,7 @@ class ReadingServiceTest {
     @Test
     void createReading_ShouldSaveAndReturnReading() {
         // Given
-        when(readingRepository.save(testReading)).thenReturn(testReading);
+        when(readingRepository.save(any(Reading.class))).thenReturn(testReading);
 
         // When
         Reading result = readingService.createReading(testReading);
