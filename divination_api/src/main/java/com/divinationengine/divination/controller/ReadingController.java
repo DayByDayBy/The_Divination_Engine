@@ -1,75 +1,64 @@
 package com.divinationengine.divination.controller;
 
+import com.divinationengine.divination.exception.ResourceNotFoundException;
 import com.divinationengine.divination.models.Card;
-import com.divinationengine.divination.models.CardInReading;
 import com.divinationengine.divination.models.Reading;
-import com.divinationengine.divination.repository.CardRepository;
-import com.divinationengine.divination.repository.ReadingRepository;
+import com.divinationengine.divination.service.CardService;
+import com.divinationengine.divination.service.ReadingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
+@RequestMapping("/reading")
 public class ReadingController {
 
     @Autowired
-    ReadingRepository readingRepository;
+    private ReadingService readingService;
 
     @Autowired
-    CardRepository cardRepository;
+    private CardService cardService;
 
-    // 1. create a controller method to be able to generate a new reading, probably a getmapping
-    // 2. inside method generate 3 or 10 cards as appropriate
-    // 3. create a new reading instance
-    // 4. create a new CardInReading instance per card created, with a position and reversed property to link reading with card
-    // 5. add the list of CardInReadings to the reading instance
-    // 6. send back in the response body the reading instance
-
-
-
-
-
-    @GetMapping("/reading/3")
-    public ResponseEntity<List<Card>> get3Cards(){
-        List<Card> threeCards = cardRepository.findRandomCardsOfCount(3);
+    @GetMapping("/3")
+    public ResponseEntity<List<Card>> get3Cards() {
+        List<Card> threeCards = cardService.getRandomCards(3);
         return new ResponseEntity<>(threeCards, HttpStatus.OK);
     }
 
-    @GetMapping("/reading/10")
-    public ResponseEntity<List<Card>> get10Cards(){
-        List<Card> tenCards = cardRepository.findRandomCardsOfCount(10);
+    @GetMapping("/10")
+    public ResponseEntity<List<Card>> get10Cards() {
+        List<Card> tenCards = cardService.getRandomCards(10);
         return new ResponseEntity<>(tenCards, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/readings")
+    @GetMapping("/s")
     public ResponseEntity<List<Reading>> getAllReadings() {
-        return new ResponseEntity<>(readingRepository.findAll(), HttpStatus.OK);
+        List<Reading> readings = readingService.getAllReadings();
+        return new ResponseEntity<>(readings, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/readings/{id}")
-    public ResponseEntity getReading(@PathVariable Long id) {
-        return new ResponseEntity<>(readingRepository.findById(id), HttpStatus.OK);
+    @GetMapping("/s/{id}")
+    public ResponseEntity<Reading> getReading(@PathVariable Long id) {
+        Reading reading = readingService.getReadingById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reading", "id", id));
+        return new ResponseEntity<>(reading, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/readings")
-    public ResponseEntity<Reading> postReading(@RequestBody Reading reading){
-//        System.out.println(reading.getCardInReadings().get(0).getCard());
-        readingRepository.save(reading);
-
-        return new ResponseEntity<>(reading, HttpStatus.CREATED);
+    @PostMapping("/s")
+    public ResponseEntity<Reading> postReading(@RequestBody Reading reading) {
+        Reading savedReading = readingService.createReading(reading);
+        return new ResponseEntity<>(savedReading, HttpStatus.CREATED);
     }
 
-    @DeleteMapping(value= "/readings/{id}")
-    public ResponseEntity<Reading> deleteReading(@PathVariable Long id){
-        Optional<Reading> readingToDelete = readingRepository.findById(id);
-        readingRepository.delete(readingToDelete.get());
-        return new ResponseEntity<>(readingToDelete.get(), HttpStatus.OK);
+    @DeleteMapping("/s/{id}")
+    public ResponseEntity<Void> deleteReading(@PathVariable Long id) {
+        if (!readingService.existsById(id)) {
+            throw new ResourceNotFoundException("Reading", "id", id);
+        }
+        readingService.deleteReading(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
-
-
 }
