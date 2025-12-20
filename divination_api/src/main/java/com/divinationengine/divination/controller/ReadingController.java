@@ -57,7 +57,6 @@ public class ReadingController {
 
     @PostMapping(value = "/readings")
     public ResponseEntity<Reading> postReading(@RequestBody Reading reading){
-
 //        System.out.println(reading.getCardInReadings().get(0).getCard());
         readingRepository.save(reading);
 

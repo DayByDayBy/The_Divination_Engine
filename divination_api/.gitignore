@@ -4,6 +4,17 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Environment Files ###
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+### Application Properties with Secrets ###
+application-*.properties
+!application.properties
+
 ### STS ###
 .apt_generated
 .classpath
@@ -31,3 +42,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Logs ###
+*.log
+logs/
+
+### OS Generated Files ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
