@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-alpine AS build
+FROM eclipse-temurin:17-jdk as BUILD
 WORKDIR /app
 
 COPY .mvn/ .mvn
@@ -8,7 +8,8 @@ RUN ./mvnw dependency:go-offline
 COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jdk
+
 WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
