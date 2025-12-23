@@ -1,10 +1,15 @@
 import React from "react";
-import PropTypes from "prop-types";
+import { Card as CardType, CardItem } from "../types/index";
 
-const Card = ({ card, cardDescription }) => {
+interface CardProps {
+    card: CardItem;
+    cardDescription?: string;
+}
+
+const Card: React.FC<CardProps> = ({ card, cardDescription }) => {
     // Use import.meta.glob for Vite to handle dynamic images
     const images = import.meta.glob('../images/*.jpg', { eager: true });
-    const imgPath = images[`../images/${card.card.nameShort}.jpg`]?.default || '';
+    const imgPath = (images[`../images/${card.card.nameShort}.jpg`] as any)?.default || '';
 
     return (
         <>
@@ -18,17 +23,6 @@ const Card = ({ card, cardDescription }) => {
             </div>
         </>
     );
-}
-
-Card.propTypes = {
-    card: PropTypes.shape({
-        card: PropTypes.shape({
-            nameShort: PropTypes.string.isRequired,
-            name: PropTypes.string.isRequired
-        }).isRequired,
-        reversed: PropTypes.bool.isRequired
-    }).isRequired,
-    cardDescription: PropTypes.string
 };
 
 export default Card;

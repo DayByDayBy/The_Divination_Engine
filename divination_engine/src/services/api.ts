@@ -1,7 +1,9 @@
 const API_BASE_URL = '/api';
 
+import { Card, CardItem, Reading } from '../types/index';
+
 export const readingAPI = {
-  getRandomCards: async (count) => {
+  getRandomCards: async (count: number): Promise<Card[]> => {
     const response = await fetch(`${API_BASE_URL}/reading/${count}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch ${count} cards`);
@@ -9,7 +11,7 @@ export const readingAPI = {
     return response.json();
   },
 
-  getAllReadings: async () => {
+  getAllReadings: async (): Promise<Reading[]> => {
     const response = await fetch(`${API_BASE_URL}/reading/s`);
     if (!response.ok) {
       throw new Error('Failed to fetch readings');
@@ -17,7 +19,7 @@ export const readingAPI = {
     return response.json();
   },
 
-  getReadingById: async (id) => {
+  getReadingById: async (id: number): Promise<Reading> => {
     const response = await fetch(`${API_BASE_URL}/reading/s/${id}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch reading ${id}`);
@@ -25,7 +27,7 @@ export const readingAPI = {
     return response.json();
   },
 
-  createReading: async (reading) => {
+  createReading: async (reading: Omit<Reading, 'id'>): Promise<Reading> => {
     const response = await fetch(`${API_BASE_URL}/reading/s`, {
       method: 'POST',
       headers: {
@@ -39,19 +41,19 @@ export const readingAPI = {
     return response.json();
   },
 
-  deleteReading: async (id) => {
+  deleteReading: async (id: number): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/reading/s/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) {
       throw new Error(`Failed to delete reading ${id}`);
     }
-    return response.status === 204 ? null : response.json();
+    return;
   },
 };
 
 export const cardAPI = {
-  getAllCards: async () => {
+  getAllCards: async (): Promise<Card[]> => {
     const response = await fetch(`${API_BASE_URL}/cards`);
     if (!response.ok) {
       throw new Error('Failed to fetch cards');
@@ -59,7 +61,7 @@ export const cardAPI = {
     return response.json();
   },
 
-  getCardById: async (id) => {
+  getCardById: async (id: number): Promise<Card> => {
     const response = await fetch(`${API_BASE_URL}/cards/${id}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch card ${id}`);

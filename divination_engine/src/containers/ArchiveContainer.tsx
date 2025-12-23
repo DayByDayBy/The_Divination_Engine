@@ -1,7 +1,7 @@
 import React from "react";
-import ReadingArchive from "../components/ReadingArchive.jsx";
+import ReadingArchive from "../components/ReadingArchive";
 
-const ArchiveContainer = () => {
+const ArchiveContainer: React.FC = () => {
     return(
 <>
         <h1>The DIVINATION ENGINE</h1>

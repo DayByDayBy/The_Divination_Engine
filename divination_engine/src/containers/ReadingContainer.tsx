@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Spread from "../components/Spread.jsx";
-import Reading from "../components/Reading.jsx";
+import Spread from "../components/Spread";
+import Reading from "../components/Reading";
 import { readingAPI } from "../services/api";
-import { SPREAD_TYPES, SPREAD_CARD_COUNTS, UI_TEXT, ERROR_MESSAGES } from "../constants/index.jsx";
+import { SPREAD_TYPES, SPREAD_CARD_COUNTS, UI_TEXT, ERROR_MESSAGES } from "../constants/index";
+import { Card, CardItem } from "../types/index";
 
-const ReadingContainer = () => {
-    const [selectedSpread, setSelectedSpread] = useState('');
-    const [cards, setCards] = useState(null);
-    const [saving, setSaving] = useState(false);
-    const [saveMessage, setSaveMessage] = useState('');
+const ReadingContainer: React.FC = () => {
+    const [selectedSpread, setSelectedSpread] = useState<string>('');
+    const [cards, setCards] = useState<CardItem[] | null>(null);
+    const [saving, setSaving] = useState<boolean>(false);
+    const [saveMessage, setSaveMessage] = useState<string>('');
     const navigate = useNavigate();
 
-    const handleSpreadChange = (event) => {
+    const handleSpreadChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedSpread(event.target.value);
     }
 
@@ -20,7 +21,7 @@ const ReadingContainer = () => {
         try {
             setSaving(true);
             const newReading = {
-                cardReadings: cards
+                cardReadings: cards || []
             };
             await readingAPI.createReading(newReading);
             setSaveMessage(UI_TEXT.SAVE_SUCCESS);
@@ -85,7 +86,6 @@ const ReadingContainer = () => {
             {cards ? (
                 <>
                     <Spread
-                        spread={selectedSpread}
                         cards={cards}
                     />
                     <div className="reading-actions">

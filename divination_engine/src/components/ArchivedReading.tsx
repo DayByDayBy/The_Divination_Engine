@@ -1,10 +1,18 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { UI_TEXT, ROUTES } from "../constants/index.jsx";
+import { UI_TEXT, ROUTES } from "../constants/index";
 
+interface Reading {
+    id: number;
+}
 
-const ArchivedReading = ({ reading, index, onDelete }) => {
+interface ArchivedReadingProps {
+    reading: Reading;
+    index: number;
+    onDelete: () => void;
+}
+
+const ArchivedReading: React.FC<ArchivedReadingProps> = ({ reading, index, onDelete }) => {
     const navigate = useNavigate();
 
     const viewReading = () => {
@@ -21,14 +29,6 @@ const ArchivedReading = ({ reading, index, onDelete }) => {
 
         </>
     )
-}
-
-ArchivedReading.propTypes = {
-    reading: PropTypes.shape({
-        id: PropTypes.number.isRequired
-    }).isRequired,
-    index: PropTypes.number.isRequired,
-    onDelete: PropTypes.func.isRequired
 };
 
 export default ArchivedReading;

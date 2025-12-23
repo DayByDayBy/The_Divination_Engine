@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useParams } from "react-router-dom";
-import ArchivedReadingList from './ArchivedReadingList.jsx';
-import ArchiveItem from './ArchiveItem.jsx';
+import ArchivedReadingList from './ArchivedReadingList';
+import ArchiveItem from './ArchiveItem';
 import { readingAPI } from '../services/api';
-import { ERROR_MESSAGES, UI_TEXT } from '../constants/index.jsx';
+import { ERROR_MESSAGES, UI_TEXT } from '../constants/index';
+import { CardItem, Reading } from '../types/index';
 
-const ReadingArchive = () => {
-  const [readings, setReadings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const ReadingArchive: React.FC = () => {
+  const [readings, setReadings] = useState<Reading[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchReadings = async () => {
@@ -28,7 +29,7 @@ const ReadingArchive = () => {
     fetchReadings();
   }, []);
 
-  const handleDeleteReading = async (readingId) => {
+  const handleDeleteReading = async (readingId: number) => {
     try {
       await readingAPI.deleteReading(readingId);
       setReadings(readings.filter(reading => reading.id !== readingId));
@@ -38,9 +39,9 @@ const ReadingArchive = () => {
     }
   };
 
-  const RenderArchiveItem = () => {
+  const RenderArchiveItem: React.FC = () => {
     const { id } = useParams();
-    const chosenReading = readings.find(reading => reading.id === parseInt(id));
+    const chosenReading = readings.find(reading => reading.id === parseInt(id || '0'));
 
     if (!chosenReading) {
       return <div className="error-message">{ERROR_MESSAGES.READING_NOT_FOUND}</div>;

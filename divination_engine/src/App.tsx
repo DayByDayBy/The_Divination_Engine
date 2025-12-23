@@ -1,12 +1,12 @@
 import React from "react";
-import NavBar from "./components/NavBar.jsx";
-import ReadingContainer from "./containers/ReadingContainer.jsx";
-import ArchiveContainer from "./containers/ArchiveContainer.jsx";
+import NavBar from "./components/NavBar";
+import ReadingContainer from "./containers/ReadingContainer";
+import ArchiveContainer from "./containers/ArchiveContainer";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import MainContainer from "./containers/MainContainer.jsx";
+import MainContainer from "./containers/MainContainer";
 
-function App() {
+const App: React.FC = () => {
   return (
     <Router>
       <NavBar />

@@ -1,9 +1,23 @@
 import React from "react";
-import PropTypes from "prop-types";
-import ArchivedReading from "./ArchivedReading.jsx";
-import { UI_TEXT } from "../constants/index.jsx";
+import ArchivedReading from "./ArchivedReading";
+import { UI_TEXT } from "../constants/index";
 
-const ArchivedReadingList = ({ readings, handleDeleteReading }) => {
+interface CardReading {
+    // Define as needed based on actual structure
+    [key: string]: any;
+}
+
+interface Reading {
+    id: number;
+    cardReadings?: CardReading[];
+}
+
+interface ArchivedReadingListProps {
+    readings: Reading[];
+    handleDeleteReading: (id: number) => void;
+}
+
+const ArchivedReadingList: React.FC<ArchivedReadingListProps> = ({ readings, handleDeleteReading }) => {
     if (!readings || readings.length === 0) {
         return (
             <div className="archive-empty">
@@ -25,14 +39,6 @@ const ArchivedReadingList = ({ readings, handleDeleteReading }) => {
             ))}
         </div>
     );
-};
-
-ArchivedReadingList.propTypes = {
-    readings: PropTypes.arrayOf(PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        cardReadings: PropTypes.array
-    })).isRequired,
-    handleDeleteReading: PropTypes.func.isRequired
 };
 
 export default ArchivedReadingList;

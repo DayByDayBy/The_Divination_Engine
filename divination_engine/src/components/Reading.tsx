@@ -1,7 +1,21 @@
 import React from "react";
-import PropTypes from "prop-types";
 
-const Reading = ({ cards = [] }) => {
+interface CardData {
+    name: string;
+    meaningUp?: string;
+    meaningRev?: string;
+}
+
+interface CardItem {
+    card: CardData;
+    reversed: boolean;
+}
+
+interface ReadingProps {
+    cards?: CardItem[];
+}
+
+const Reading: React.FC<ReadingProps> = ({ cards = [] }) => {
     return (
 
         <div className="meanings">
@@ -16,21 +30,6 @@ const Reading = ({ cards = [] }) => {
         </div>
 
     );
-};
-
-Reading.propTypes = {
-    cards: PropTypes.arrayOf(PropTypes.shape({
-        card: PropTypes.shape({
-            name: PropTypes.string.isRequired,
-            meaningUp: PropTypes.string,
-            meaningRev: PropTypes.string
-        }).isRequired,
-        reversed: PropTypes.bool.isRequired
-    }))
-};
-
-Reading.defaultProps = {
-    cards: []
 };
 
 export default Reading;

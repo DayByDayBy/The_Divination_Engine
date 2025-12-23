@@ -1,10 +1,10 @@
 import React from "react";
-import NavBar from "../components/NavBar.jsx";
-import ArchiveContainer from "./ArchiveContainer.jsx";
-import ReadingContainer from "./ReadingContainer.jsx";
+import NavBar from "../components/NavBar";
+import ArchiveContainer from "./ArchiveContainer";
+import ReadingContainer from "./ReadingContainer";
 import { Routes, Route } from 'react-router-dom';
 
-const MainContainer = () => {
+const MainContainer: React.FC = () => {
     return (
         <div className="app">
             <header>

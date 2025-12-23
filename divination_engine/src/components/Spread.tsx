@@ -1,11 +1,15 @@
 import React from "react";
-import PropTypes from "prop-types";
-import Card from "./Card.jsx";
-import { CARD_POSITIONS, SPREAD_CARD_COUNTS, SPREAD_TYPES } from "../constants/index.jsx";
+import Card from "./Card";
+import { CARD_POSITIONS, SPREAD_CARD_COUNTS, SPREAD_TYPES } from "../constants/index";
+import { CardItem } from "../types/index";
 
-const Spread = ({ cards }) => {
+interface SpreadProps {
+    cards: CardItem[];
+}
 
-    let cardsForRender = []
+const Spread: React.FC<SpreadProps> = ({ cards }) => {
+
+    let cardsForRender: React.ReactElement[] = []
     if(cards.length > 0){
         cardsForRender = cards.map((card, index) => {
             let cardDescription = null;
@@ -24,16 +28,6 @@ const Spread = ({ cards }) => {
             {cardsForRender}
         </div>
     );
-}
-
-Spread.propTypes = {
-    cards: PropTypes.arrayOf(PropTypes.shape({
-        card: PropTypes.shape({
-            nameShort: PropTypes.string.isRequired,
-            name: PropTypes.string.isRequired
-        }).isRequired,
-        reversed: PropTypes.bool.isRequired
-    })).isRequired
 };
 
 export default Spread;

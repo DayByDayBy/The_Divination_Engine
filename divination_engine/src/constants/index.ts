@@ -1,11 +1,13 @@
 export const SPREAD_TYPES = {
   THREE_CARD: 'three-card',
   CELTIC_CROSS: 'celtic-cross'
-};
+} as const;
 
-export const SPREAD_CARD_COUNTS = {
-  [SPREAD_TYPES.THREE_CARD]: 3,
-  [SPREAD_TYPES.CELTIC_CROSS]: 10
+export type SpreadType = keyof typeof SPREAD_TYPES;
+
+export const SPREAD_CARD_COUNTS: Record<string, number> = {
+  'three-card': 3,
+  'celtic-cross': 10
 };
 
 export const CARD_POSITIONS = {
@@ -36,9 +38,9 @@ export const ROUTES = {
 
 export const API_ENDPOINTS = {
   CARDS: '/api/cards',
-  CARDS_RANDOM: (count) => `/api/reading/${count}`,
+  CARDS_RANDOM: (count: number) => `/api/reading/${count}`,
   READINGS: '/api/reading/s',
-  READING_BY_ID: (id) => `/api/reading/s/${id}`
+  READING_BY_ID: (id: number) => `/api/reading/s/${id}`
 };
 
 export const ERROR_MESSAGES = {
