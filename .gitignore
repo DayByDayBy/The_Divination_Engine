@@ -1,0 +1,89 @@
+# ============================================
+# Environment & Secrets
+# ============================================
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Backend application properties with secrets
+application-*.properties
+!application.properties
+
+# ============================================
+# IDE
+# ============================================
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+.sts4-cache
+.springBeans
+.settings/
+.classpath
+.factorypath
+.project
+.apt_generated
+*.swp
+*.swo
+*~
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ============================================
+# Frontend (Node.js/Vite/React)
+# ============================================
+node_modules/
+.pnp/
+.pnp.js
+.pnp-loader.mjs
+dist/
+build/
+coverage/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.nyc_output
+*.lcov
+
+# ============================================
+# Backend (Java/Spring/Maven)
+# ============================================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/
+.gradle/
+build/
+HELP.md
+
+# ============================================
+# Logs
+# ============================================
+*.log
+logs/
+
+# ============================================
+# OS
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
