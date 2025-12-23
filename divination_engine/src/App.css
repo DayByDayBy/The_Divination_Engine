@@ -1,0 +1,250 @@
+body{
+  margin: 0;
+  background-color:hsla(344, 17%, 74%, 0.384);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  text-align:center;
+  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-weight:bolder;
+  font-size: larger;
+}
+
+a:link {
+  color: hsl(344, 17%, 74%, 0.8);}
+a:visited {
+  color: hsl(120, 100%, 25%, 0.4);}
+a:hover {
+  color: hsla(330, 49%, 51%, 0.809);}
+a:active {
+  color:hsl(33, 100%, 88%, 0.8)}
+
+ul{
+  display: flex;
+  justify-content: space-between;
+}
+
+li{
+  list-style: none;
+}
+
+h1{
+  margin: 0;
+  padding:0;
+  margin-bottom: .5rem;
+}
+
+h2{
+  font-variant:small-caps;
+}
+
+h3{
+margin:.5rem 0 .5rem 0;
+}
+
+img{
+  max-width:100%;
+  max-height:100%;
+  object-fit: cover;
+}
+
+p{
+  margin:0;
+  padding: 0;
+}
+
+
+/* spread-stuff */
+
+.spread-three{
+  background-color: #fffaf389;
+  display: inline-grid;
+  justify-self:center;
+  max-width: 88vw;
+  grid-template-columns: repeat(auto-fit, minmax(3rem, 1fr));
+  border: solid rgb(54, 160, 42);
+  border-radius: 1rem;
+  padding: 2rem;
+  font-weight: 800;
+  font-variant:small-caps;
+  }
+
+.spread-ten{
+  background-color: #fffaf389;
+  display: inline-grid;
+  grid-template-columns: repeat(7, 0.5fr);
+  grid-template-rows: repeat(4, 0.1fr);
+  justify-self: center;
+  max-width: 80%;
+  align-content: center;
+  border: solid rgb(54, 160, 42);
+  border-radius: 1rem;
+  padding: 0.5rem;
+  font-weight: 800;
+  font-variant:small-caps;
+}
+
+.spread-ten > div:nth-of-type(1){
+  grid-row: 2;
+  grid-column: 4;
+  margin: 0 0  0 -8rem;
+}
+.spread-ten > div:nth-of-type(2){
+  grid-row: 2;
+  grid-column: 2;
+  margin: -2rem -4rem 0 0;
+  z-index: 1;
+
+}
+.spread-ten > div:nth-of-type(3){
+  grid-row: 3;
+  grid-column: 3;
+  margin: 0 0 0 -5rem;
+}
+.spread-ten > div:nth-of-type(4){
+  grid-row: 2;
+  grid-column: 1;
+}
+.spread-ten > div:nth-of-type(5){
+  grid-row: 2;
+  grid-column: 5;
+}
+.spread-ten > div:nth-of-type(6){
+  grid-row: 1;
+  grid-column: 3;
+  margin: 0 0 0 -5rem;
+}
+.spread-ten > div:nth-of-type(7){
+  grid-row: 4;
+  grid-column: 7;
+}
+.spread-ten > div:nth-of-type(8){
+  grid-row: 3;
+  grid-column: 7;
+}
+.spread-ten > div:nth-of-type(9){
+  grid-row: 2;
+  grid-column: 7;
+}
+.spread-ten > div:nth-of-type(10){
+  grid-row: 1;
+  grid-column: 7;
+}
+
+
+@media (max-width: 400px) {
+  .spread {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+.navbar{
+  display: flex;
+  justify-content: space-around;
+  font-size:larger;
+  width:100vw;
+  height: 10vh;
+  position:absolute;
+  top: 0;
+  right:0;
+}
+
+.save-button{
+width: auto;
+padding: 0.5rem;
+margin: .75rem;
+height: 2rem;
+justify-self: center;
+border-radius: 1rem;
+background-color:hsl(33, 100%, 88%, 0.8);
+border-color: hsl(344, 17%, 74%, 0.8);
+}
+.delete-button{
+  width: 6vw;
+  height: 1.2rem;
+  justify-self: center;
+  border-radius: 1rem;
+  background-color:hsl(33, 100%, 88%, 0.8);
+  border-color: hsl(344, 17%, 74%, 0.8);
+
+
+}
+
+
+.card-object{
+  display: grid;
+  justify-content: center;
+  align-content:space-between;
+  border-radius: 1rem;
+  padding: .5rem;
+  margin: .5rem;
+}
+
+.card{
+  background-image: url('./images/z-back.jpg');
+  background-size: 110%;
+  background-position: center;
+  height:250px;
+  width:150px;
+  border: solid black;
+  padding: .4rem;
+  border-radius: 1rem;
+}
+.card-reverse{
+  background-image: url('./images/z-back.jpg');
+  background-size: 110%;
+  background-position: center;
+  height:250px;
+  width:150px;
+  border: solid black;
+  padding: .5rem;
+  border-radius: 1rem;
+  transform: rotate(180deg);
+}
+
+.cardDescription{
+  margin: .25rem 0 2rem 0 ;
+}
+
+.meanings{
+  display: flex;
+  font-weight: 300;
+  font-size: 1.25rem;
+  justify-content: center;
+  justify-content: space-evenly;
+}
+.meaning{
+  display: flex;
+  width: 33%;
+  flex-direction: column;
+  padding: 0 1rem;
+  margin: 0rem 1rem;
+  
+}
+
+.reading-container{
+  display: inline-grid;
+  justify-content: center;
+  align-content: center;
+  grid-template-rows: min-content;  
+}
+
+
+.archive-item{
+display: inline-grid;
+grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+border: solid hsla(344, 17%, 74%, 0.8);
+border-radius: 1rem 1rem 0 0;
+grid-template-rows: 5;
+padding: 1rem;
+font-weight: 900;
+font-variant:small-caps;
+}
+
+
+
+/* #root{
+  display: grid;
+} */
