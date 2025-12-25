@@ -178,8 +178,8 @@ A: Yes. Use it to clarify, not command. HDPC tells you: "Here's your gut talking
 
 ## Original Repositories
 
-- Backend: [Repo]
-- Frontend: [Repo]
+- Frontend: [[Repo](https://github.com/DayByDayBy/the-divination-engine)]
+- Backend: [[Repo](https://github.com/DayByDayBy/the-divination-engine-API)]
 
 ## License
 
