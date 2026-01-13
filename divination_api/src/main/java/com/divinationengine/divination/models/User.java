@@ -15,8 +15,8 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
     
-    @Column(nullable = false)
-    private String password;
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -29,10 +29,10 @@ public class User {
         this.createdAt = LocalDateTime.now();
     }
     
-    public User(String email, String password) {
+    public User(String email, String passwordHash) {
         this();
         this.email = email;
-        this.password = password;
+        this.passwordHash = passwordHash;
     }
     
     public UUID getId() {
@@ -51,12 +51,12 @@ public class User {
         this.email = email;
     }
     
-    public String getPassword() {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
     }
     
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
     
     public UserTier getTier() {

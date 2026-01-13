@@ -5,10 +5,14 @@ import com.divinationengine.divination.dto.LoginRequest;
 import com.divinationengine.divination.dto.RegisterRequest;
 import com.divinationengine.divination.models.User;
 import com.divinationengine.divination.service.UserService;
+import com.divinationengine.divination.exception.UserAlreadyExistsException;
+import com.divinationengine.divination.exception.InvalidCredentialsException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +20,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class AuthController {
+    
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     
     @Autowired
     private UserService userService;
@@ -35,8 +40,15 @@ public class AuthController {
             
             AuthResponse response = new AuthResponse(token, user.getEmail(), user.getTier().toString());
             return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (UserAlreadyExistsException e) {
+            logger.warn("Registration attempt with existing email: {}", registerRequest.getEmail());
+            return ResponseEntity.badRequest().body("User already exists");
+        } catch (InvalidCredentialsException e) {
+            logger.error("Registration failed unexpectedly", e);
+            return ResponseEntity.badRequest().body("Invalid request");
+        } catch (Exception e) {
+            logger.error("Registration failed", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Registration failed");
         }
     }
     
@@ -52,13 +64,17 @@ public class AuthController {
             User user = userService.findByEmail(loginRequest.getEmail()).orElse(null);
             
             if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+                throw new InvalidCredentialsException("Invalid credentials");
             }
             
             AuthResponse response = new AuthResponse(token, user.getEmail(), user.getTier().toString());
             return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
+        } catch (InvalidCredentialsException e) {
+            logger.warn("Login attempt failed for email: {}", loginRequest.getEmail());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        } catch (Exception e) {
+            logger.error("Login failed", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication failed");
         }
     }
 }
