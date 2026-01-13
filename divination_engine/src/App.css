@@ -76,7 +76,7 @@ p{
   grid-template-columns: repeat(7, 0.5fr);
   grid-template-rows: repeat(4, 0.1fr);
   justify-self: center;
-  max-width: 80%;
+  max-width: 80vw;
   align-content: center;
   border: solid rgb(54, 160, 42);
   border-radius: 1rem;
