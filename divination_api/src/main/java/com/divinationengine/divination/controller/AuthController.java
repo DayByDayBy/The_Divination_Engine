@@ -18,6 +18,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -41,7 +45,7 @@ public class AuthController {
             AuthResponse response = new AuthResponse(token, user.getEmail(), user.getTier().toString());
             return ResponseEntity.ok(response);
         } catch (UserAlreadyExistsException e) {
-            logger.warn("Registration attempt with existing email: {}", registerRequest.getEmail());
+            logger.warn("Registration attempt with existing email hash: {}", hashEmail(registerRequest.getEmail()));
             return ResponseEntity.badRequest().body("User already exists");
         } catch (InvalidCredentialsException e) {
             logger.error("Registration failed unexpectedly", e);
@@ -70,11 +74,28 @@ public class AuthController {
             AuthResponse response = new AuthResponse(token, user.getEmail(), user.getTier().toString());
             return ResponseEntity.ok(response);
         } catch (InvalidCredentialsException e) {
-            logger.warn("Login attempt failed for email: {}", loginRequest.getEmail());
+            logger.warn("Login attempt failed for email hash: {}", hashEmail(loginRequest.getEmail()));
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         } catch (Exception e) {
             logger.error("Login failed", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication failed");
+        }
+    }
+    
+    private static String hashEmail(String email) {
+        if (email == null) {
+            return "null";
+        }
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(email.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder(hash.length * 2);
+            for (byte b : hash) {
+                hexString.append(String.format("%02x", b));
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            return "sha256_unavailable";
         }
     }
 }

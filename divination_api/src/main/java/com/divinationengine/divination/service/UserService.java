@@ -6,12 +6,14 @@ import com.divinationengine.divination.repository.UserRepository;
 import com.divinationengine.divination.security.JwtUtil;
 import com.divinationengine.divination.exception.UserAlreadyExistsException;
 import com.divinationengine.divination.exception.InvalidCredentialsException;
+import com.divinationengine.divination.exception.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -37,7 +39,7 @@ public class UserService {
         try {
             return userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
-            logger.warn("Registration failed for email {}: {}", email, e.getMessage());
+            logger.warn("Registration failed due to duplicate email");
             throw new UserAlreadyExistsException("Email already exists");
         }
     }
@@ -46,13 +48,13 @@ public class UserService {
         Optional<User> userOpt = userRepository.findByEmail(email);
         
         if (userOpt.isEmpty()) {
-            logger.warn("Login attempt for non-existent email: {}", email);
+            logger.warn("Login attempt for non-existent account");
             throw new InvalidCredentialsException("Invalid credentials");
         }
         
         User user = userOpt.get();
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
-            logger.warn("Invalid password attempt for email: {}", email);
+            logger.warn("Invalid password attempt");
             throw new InvalidCredentialsException("Invalid credentials");
         }
         
@@ -67,13 +69,11 @@ public class UserService {
         return userRepository.findById(userId);
     }
     
-    public User updateUserTier(UUID userId, UserTier newTier) throws RuntimeException {
-        Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) {
-            throw new RuntimeException("User not found");
-        }
+    @Transactional
+    public User updateUserTier(UUID userId, UserTier newTier) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
         
-        User user = userOpt.get();
         user.setTier(newTier);
         return userRepository.save(user);
     }

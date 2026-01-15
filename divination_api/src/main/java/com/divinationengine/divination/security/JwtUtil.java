@@ -31,7 +31,7 @@ public class JwtUtil {
     }
     
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
     
     public String generateToken(UUID userId, String tier) {
@@ -52,7 +52,6 @@ public class JwtUtil {
                 .getPayload()
                 .getSubject();
     }
-    
     
     public String getTierFromToken(String token) {
         return Jwts.parser()
@@ -77,13 +76,13 @@ public class JwtUtil {
     
     public boolean isTokenExpired(String token) {
         try {
-            Date expiration = Jwts.parser()
+            Jwts.parser()
                     .verifyWith(getSigningKey())
                     .build()
-                    .parseSignedClaims(token)
-                    .getPayload()
-                    .getExpiration();
-            return expiration.before(new Date());
+                    .parseSignedClaims(token);
+            return false;
+        } catch (ExpiredJwtException e) {
+            return true;
         } catch (JwtException | IllegalArgumentException e) {
             return true;
         }
