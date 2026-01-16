@@ -11,6 +11,9 @@ public class InterpretRequest {
     @NotNull(message = "Reading ID is required")
     private Long readingId;
     
+    @NotBlank(message = "User input is required")
+    private String userInput;
+    
     @NotEmpty(message = "Cards are required")
     @Valid
     private List<CardInterpretDTO> cards;
@@ -22,8 +25,9 @@ public class InterpretRequest {
     
     public InterpretRequest() {}
     
-    public InterpretRequest(Long readingId, List<CardInterpretDTO> cards, String spreadType, String userContext) {
+    public InterpretRequest(Long readingId, String userInput, List<CardInterpretDTO> cards, String spreadType, String userContext) {
         this.readingId = readingId;
+        this.userInput = userInput;
         this.cards = cards;
         this.spreadType = spreadType;
         this.userContext = userContext;
@@ -35,6 +39,14 @@ public class InterpretRequest {
     
     public void setReadingId(Long readingId) {
         this.readingId = readingId;
+    }
+    
+    public String getUserInput() {
+        return userInput;
+    }
+    
+    public void setUserInput(String userInput) {
+        this.userInput = userInput;
     }
     
     public List<CardInterpretDTO> getCards() {
