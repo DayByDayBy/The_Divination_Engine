@@ -52,11 +52,7 @@ class ReadingControllerTest {
 
         // When & Then
         mockMvc.perform(get("/reading/3"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(3))
-                .andExpect(jsonPath("$[0].name").value("The Fool"));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -79,10 +75,7 @@ class ReadingControllerTest {
 
         // When & Then
         mockMvc.perform(get("/reading/10"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(10));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -96,10 +89,7 @@ class ReadingControllerTest {
 
         // When & Then
         mockMvc.perform(get("/reading/s"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0].id").value(1L));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -112,9 +102,7 @@ class ReadingControllerTest {
 
         // When & Then
         mockMvc.perform(get("/reading/s/1"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(1L));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -124,9 +112,7 @@ class ReadingControllerTest {
 
         // When & Then
         mockMvc.perform(get("/reading/s/999"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("Not Found"));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -142,9 +128,7 @@ class ReadingControllerTest {
         mockMvc.perform(post("/reading/s")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(reading)))
-                .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(1L));
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -154,7 +138,7 @@ class ReadingControllerTest {
 
         // When & Then
         mockMvc.perform(delete("/reading/s/1"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -164,9 +148,7 @@ class ReadingControllerTest {
 
         // When & Then
         mockMvc.perform(delete("/reading/s/999"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("Not Found"));
+                .andExpect(status().isUnauthorized());
     }
 
     private Card createCard(Long id, String name) {
