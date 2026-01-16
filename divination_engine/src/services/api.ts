@@ -32,7 +32,12 @@ const apiFetch = (path: string, options: ApiFetchOptions = {}) => {
   const token = getAuthToken();
   const headers: Record<string, string> = { ...(options.headers || {}) };
 
-  if (token && !headers.Authorization) {
+  // Check for existing Authorization header case-insensitively
+  const hasAuthHeader = Object.keys(headers).some(
+    key => key.toLowerCase() === 'authorization'
+  );
+
+  if (token && !hasAuthHeader) {
     headers.Authorization = `Bearer ${token}`;
   }
 

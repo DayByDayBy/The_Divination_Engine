@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -42,6 +43,7 @@ class ReadingControllerTest {
     private ObjectMapper objectMapper;
 
     @Test
+    @WithMockUser(roles = {"USER"})
     void get3Cards_ShouldReturn3RandomCards() throws Exception {
         // Given
         List<Card> cards = Arrays.asList(
@@ -54,10 +56,17 @@ class ReadingControllerTest {
 
         // When & Then
         mockMvc.perform(get("/reading/3"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[0].name").value("The Fool"))
+                .andExpect(jsonPath("$[1].name").value("The Magician"))
+                .andExpect(jsonPath("$[2].name").value("The High Priestess"));
     }
 
     @Test
+    @WithMockUser(roles = {"USER"})
     void get10Cards_ShouldReturn10RandomCards() throws Exception {
         // Given
         List<Card> cards = Arrays.asList(
@@ -77,7 +86,12 @@ class ReadingControllerTest {
 
         // When & Then
         mockMvc.perform(get("/reading/10"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(10))
+                .andExpect(jsonPath("$[0].name").value("The Fool"))
+                .andExpect(jsonPath("$[9].name").value("The Hermit"));
     }
 
     @Test

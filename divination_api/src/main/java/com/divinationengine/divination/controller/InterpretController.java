@@ -86,10 +86,6 @@ public class InterpretController {
             }
         }
 
-        return authorities.stream()
-                .filter(a -> a != null && a.startsWith("ROLE_"))
-                .map(a -> a.substring("ROLE_".length()))
-                .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "User tier is not available"));
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User tier is not available");
     }
 }

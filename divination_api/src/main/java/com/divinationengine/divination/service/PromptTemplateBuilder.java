@@ -38,7 +38,7 @@ public class PromptTemplateBuilder {
             Please provide a thoughtful interpretation that:
             1. Explains the symbolic meaning of each card in its position
             2. Considers how the cards interact with each other
-            3. Offers reflective guidance for personal growth
+            3. Offers reflective questions to encourage self-exploration
             4. Offers practical guidance for personal growth
             5. Avoids making absolute predictions about the future
             6. Maintains a supportive, empowering tone

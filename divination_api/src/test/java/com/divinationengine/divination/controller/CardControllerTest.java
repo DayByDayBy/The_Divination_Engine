@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -31,6 +32,7 @@ class CardControllerTest {
     private CardService cardService;
 
     @Test
+    @WithMockUser(roles = {"USER"})
     void getAllCards_ShouldReturnAllCards() throws Exception {
         // Given
         Card card = new Card();
@@ -43,10 +45,16 @@ class CardControllerTest {
 
         // When & Then
         mockMvc.perform(get("/cards"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].name").value("The Fool"))
+                .andExpect(jsonPath("$[0].type").value("major"));
     }
 
     @Test
+    @WithMockUser(roles = {"USER"})
     void getCard_WithValidId_ShouldReturnCard() throws Exception {
         // Given
         Card card = new Card();
@@ -58,16 +66,20 @@ class CardControllerTest {
 
         // When & Then
         mockMvc.perform(get("/cards/1"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Ace of Wands"))
+                .andExpect(jsonPath("$.type").value("minor"));
     }
 
     @Test
+    @WithMockUser(roles = {"USER"})
     void getCard_WithInvalidId_ShouldReturn404() throws Exception {
         // Given
         when(cardService.getCardById(anyLong())).thenReturn(Optional.empty());
 
         // When & Then
         mockMvc.perform(get("/cards/999"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound());
     }
 }

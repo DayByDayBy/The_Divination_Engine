@@ -2,11 +2,15 @@ package com.divinationengine.divination.service;
 
 import com.divinationengine.divination.dto.InterpretRequest;
 import com.divinationengine.divination.dto.InterpretResponse;
+import com.divinationengine.divination.exception.LlmGenerationException;
 import com.divinationengine.divination.exception.ResourceNotFoundException;
 import com.divinationengine.divination.models.Reading;
 import com.divinationengine.divination.repository.ReadingRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
@@ -14,6 +18,8 @@ import java.util.UUID;
 
 @Service
 public class InterpretationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(InterpretationService.class);
 
     private final ReadingRepository readingRepository;
     private final PromptTemplateBuilder promptTemplateBuilder;
@@ -27,6 +33,7 @@ public class InterpretationService {
         this.llmService = llmService;
     }
 
+    @Transactional
     public InterpretResponse interpret(InterpretRequest request, String userId, String tier) {
         UUID userUuid;
         try {
@@ -60,10 +67,23 @@ public class InterpretationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
 
-        String interpretation = llmService.generateInterpretation(prompt);
+        String interpretation;
+        try {
+            interpretation = llmService.generateInterpretation(prompt);
+            logger.info("Generated LLM interpretation for reading {}: {}", request.getReadingId(), interpretation);
+        } catch (Exception e) {
+            logger.error("Failed to generate LLM interpretation for reading {}: {}", request.getReadingId(), e.getMessage(), e);
+            throw new LlmGenerationException("Failed to generate interpretation: " + e.getMessage(), e);
+        }
 
-        reading.setLlmInterpretation(interpretation);
-        readingRepository.save(reading);
+        try {
+            reading.setLlmInterpretation(interpretation);
+            readingRepository.save(reading);
+            logger.info("Saved interpretation for reading {}", request.getReadingId());
+        } catch (Exception e) {
+            logger.error("Failed to save interpretation for reading {}: {}", request.getReadingId(), e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to save interpretation", e);
+        }
 
         return new InterpretResponse(request.getReadingId(), interpretation, Instant.now(), request.getSpreadType(), tier);
     }
