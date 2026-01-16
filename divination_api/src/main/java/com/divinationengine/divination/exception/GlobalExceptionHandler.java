@@ -36,12 +36,14 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         HttpStatusCode statusCode = ex.getStatusCode();
+        HttpStatus resolvedStatus = HttpStatus.resolve(statusCode.value());
+        String reasonPhrase = resolvedStatus != null ? resolvedStatus.getReasonPhrase() : statusCode.toString();
         body.put("status", statusCode.value());
-        body.put("error", statusCode.toString());
-        body.put("message", ex.getReason());
+        body.put("error", reasonPhrase);
+        body.put("message", ex.getReason() != null ? ex.getReason() : reasonPhrase);
         body.put("path", request.getDescription(false).replace("uri=", ""));
 
-        return new ResponseEntity<>(body, HttpStatus.valueOf(statusCode.value()));
+        return new ResponseEntity<>(body, statusCode);
     }
 
     @ExceptionHandler(BindException.class)
