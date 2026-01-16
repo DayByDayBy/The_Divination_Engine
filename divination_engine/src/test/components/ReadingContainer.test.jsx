@@ -49,14 +49,14 @@ describe('ReadingContainer', () => {
     vi.clearAllMocks()
   })
 
-  test('renders the title', () => {
+  test('renders the spread selector', () => {
     render(
       <BrowserRouter>
         <ReadingContainer />
       </BrowserRouter>
     )
 
-    expect(screen.getByText('The DIVINATION ENGINE')).toBeInTheDocument()
+    expect(screen.getByText('Select A Spread:')).toBeInTheDocument()
   })
 
   test('displays spread selector', () => {

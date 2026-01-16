@@ -1,10 +1,50 @@
 const API_BASE_URL = '/api';
 
-import { Card, CardItem, Reading } from '../types/index';
+import { Card, Reading } from '../types/index';
+
+const AUTH_TOKEN_KEY = 'divination_auth_token';
+
+const getAuthToken = (): string | null => {
+  try {
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+};
+
+export const setAuthToken = (token: string | null) => {
+  try {
+    if (token) {
+      localStorage.setItem(AUTH_TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+    }
+  } catch {
+    return;
+  }
+};
+
+type ApiFetchOptions = Omit<RequestInit, 'headers'> & {
+  headers?: Record<string, string>;
+};
+
+const apiFetch = (path: string, options: ApiFetchOptions = {}) => {
+  const token = getAuthToken();
+  const headers: Record<string, string> = { ...(options.headers || {}) };
+
+  if (token && !headers.Authorization) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers,
+  });
+};
 
 export const readingAPI = {
   getRandomCards: async (count: number): Promise<Card[]> => {
-    const response = await fetch(`${API_BASE_URL}/reading/${count}`);
+    const response = await apiFetch(`/reading/${count}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch ${count} cards`);
     }
@@ -12,7 +52,7 @@ export const readingAPI = {
   },
 
   getAllReadings: async (): Promise<Reading[]> => {
-    const response = await fetch(`${API_BASE_URL}/reading/s`);
+    const response = await apiFetch(`/reading/s`);
     if (!response.ok) {
       throw new Error('Failed to fetch readings');
     }
@@ -20,7 +60,7 @@ export const readingAPI = {
   },
 
   getReadingById: async (id: number): Promise<Reading> => {
-    const response = await fetch(`${API_BASE_URL}/reading/s/${id}`);
+    const response = await apiFetch(`/reading/s/${id}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch reading ${id}`);
     }
@@ -28,7 +68,7 @@ export const readingAPI = {
   },
 
   createReading: async (reading: Omit<Reading, 'id'>): Promise<Reading> => {
-    const response = await fetch(`${API_BASE_URL}/reading/s`, {
+    const response = await apiFetch(`/reading/s`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -42,7 +82,7 @@ export const readingAPI = {
   },
 
   deleteReading: async (id: number): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/reading/s/${id}`, {
+    const response = await apiFetch(`/reading/s/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) {
@@ -54,7 +94,7 @@ export const readingAPI = {
 
 export const cardAPI = {
   getAllCards: async (): Promise<Card[]> => {
-    const response = await fetch(`${API_BASE_URL}/cards`);
+    const response = await apiFetch(`/cards`);
     if (!response.ok) {
       throw new Error('Failed to fetch cards');
     }
@@ -62,7 +102,7 @@ export const cardAPI = {
   },
 
   getCardById: async (id: number): Promise<Card> => {
-    const response = await fetch(`${API_BASE_URL}/cards/${id}`);
+    const response = await apiFetch(`/cards/${id}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch card ${id}`);
     }
