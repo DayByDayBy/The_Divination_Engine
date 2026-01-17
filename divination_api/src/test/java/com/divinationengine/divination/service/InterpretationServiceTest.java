@@ -5,6 +5,7 @@ import com.divinationengine.divination.dto.InterpretRequest;
 import com.divinationengine.divination.dto.InterpretResponse;
 import com.divinationengine.divination.exception.LlmGenerationException;
 import com.divinationengine.divination.exception.ResourceNotFoundException;
+import com.divinationengine.divination.service.LlmServiceException;
 import com.divinationengine.divination.models.Reading;
 import com.divinationengine.divination.repository.ReadingRepository;
 import org.junit.jupiter.api.BeforeEach;
