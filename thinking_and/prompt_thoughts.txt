@@ -7,7 +7,7 @@ The spread is as follows:
 - Present: {card2.name} ({card2.reversed ? "reversed" : "upright"}) – {card2.reversed ? card2.meaningRev : card2.meaningUp}
 - Future: {card3.name} ({card3.reversed ? "reversed" : "upright"}) – {card3.reversed ? card3.meaningRev : card3.meaningUp}
 
-Provide a nuanced, cohesive reading that addresses the querent's inquiry and focus area."""
+Provide a nuanced, cohesive reading that addresses the querent's inquiry and focus area, and provides some insight they may find useful. be mindful that this is an interpretative art, and therefore open ended ideas that leave some room for the querent  are more useful than concrete suggestions or statements of certainty."""
 
 
 maybe sth like `/api/tarot/prompt_reading` as an endpoint? 

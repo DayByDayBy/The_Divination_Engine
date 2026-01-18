@@ -6,6 +6,7 @@ import com.divinationengine.divination.exception.LlmGenerationException;
 import com.divinationengine.divination.exception.ResourceNotFoundException;
 import com.divinationengine.divination.models.Reading;
 import com.divinationengine.divination.repository.ReadingRepository;
+import com.divinationengine.divination.service.prompting.PromptTemplateBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

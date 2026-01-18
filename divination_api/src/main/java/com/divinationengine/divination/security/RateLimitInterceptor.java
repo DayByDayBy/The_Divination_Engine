@@ -30,7 +30,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // Only apply rate limiting to interpret endpoint
-        if (!request.getRequestURI().equals("/tarot/interpret")) {
+        if (!request.getServletPath().equals("/tarot/interpret")) {
             return true;
         }
 

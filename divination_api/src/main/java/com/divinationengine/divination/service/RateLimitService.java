@@ -53,7 +53,7 @@ public class RateLimitService {
             }
             
             if (newCount == 1) {
-                // Set expiration to end of current UTC day (24 hours from first request)
+                // Set expiration to end of current UTC day using getSecondsUntilEndOfDay()
                 redisTemplate.expire(dailyKey, getSecondsUntilEndOfDay(), TimeUnit.SECONDS);
             }
             
