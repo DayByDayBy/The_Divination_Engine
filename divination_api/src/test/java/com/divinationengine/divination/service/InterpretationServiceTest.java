@@ -10,6 +10,8 @@ import com.divinationengine.divination.repository.ReadingRepository;
 import com.divinationengine.divination.service.LlmService;
 import com.divinationengine.divination.service.LlmServiceException;
 import com.divinationengine.divination.service.prompting.PromptTemplateBuilder;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +39,9 @@ class InterpretationServiceTest {
 
     @Mock
     private LlmService llmService;
+
+    @Mock
+    private TransactionTemplate transactionTemplate;
 
     @InjectMocks
     private InterpretationService interpretationService;
@@ -76,6 +81,10 @@ class InterpretationServiceTest {
         when(readingRepository.findById(1L)).thenReturn(Optional.of(testReading));
         when(promptTemplateBuilder.buildThreeCardPrompt(any(), any(), any())).thenReturn(mockPrompt);
         when(llmService.generateInterpretation(mockPrompt)).thenReturn(mockInterpretation);
+        when(transactionTemplate.execute(any())).thenAnswer(invocation -> {
+            TransactionStatus status = mock(TransactionStatus.class);
+            return ((org.springframework.transaction.support.TransactionCallback<?>) invocation.getArgument(0)).doInTransaction(status);
+        });
         when(readingRepository.save(any(Reading.class))).thenReturn(testReading);
 
         // When
@@ -122,6 +131,10 @@ class InterpretationServiceTest {
         when(readingRepository.findById(1L)).thenReturn(Optional.of(testReading));
         when(promptTemplateBuilder.buildThreeCardPrompt(any(), any(), any())).thenReturn("Test prompt");
         when(llmService.generateInterpretation(any())).thenThrow(new LlmServiceException("API error"));
+        when(transactionTemplate.execute(any())).thenAnswer(invocation -> {
+            TransactionStatus status = mock(TransactionStatus.class);
+            return ((org.springframework.transaction.support.TransactionCallback<?>) invocation.getArgument(0)).doInTransaction(status);
+        });
 
         // When & Then
         assertThrows(LlmGenerationException.class, () -> {

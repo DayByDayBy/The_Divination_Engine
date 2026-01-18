@@ -42,6 +42,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/reading/**", "/cards/**").permitAll()
                 .requestMatchers("/tarot/**").authenticated()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
