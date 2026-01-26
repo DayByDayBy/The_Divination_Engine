@@ -21,7 +21,11 @@ const ReadingContainer: React.FC = () => {
         try {
             setSaving(true);
             const newReading = {
-                cardReadings: cards || []
+                cardReadings: (cards || []).map((cardItem, index) => ({
+                    card: cardItem.card,
+                    reversed: cardItem.reversed,
+                    position: index + 1
+                }))
             };
             await readingAPI.createReading(newReading);
             setSaveMessage(UI_TEXT.SAVE_SUCCESS);
