@@ -82,6 +82,13 @@ describe('Prisma Compatibility Tests', () => {
     test('should have cards table with correct structure', async () => {
       const card = await prisma.card.findFirst();
       
+      expect(card).not.toBeNull();
+      expect(card).toBeDefined();
+      
+      if (!card) {
+        throw new Error('No cards found in database - ensure cards are seeded');
+      }
+      
       expect(card).toHaveProperty('id');
       expect(card).toHaveProperty('type');
       expect(card).toHaveProperty('suit');
