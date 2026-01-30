@@ -106,7 +106,8 @@ Returns N random cards for a reading.
 | Property | Value |
 |----------|-------|
 | Auth | Optional |
-| Rate Limit | 60/min/user |
+| Rate Limit (authenticated) | 60/min/user |
+| Rate Limit (unauthenticated) | 60/min/IP |
 | Path Param | `count` (number, 1-78) |
 
 **Response (200):**
