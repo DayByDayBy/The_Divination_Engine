@@ -357,8 +357,11 @@
         },
         "errorResponses": {
           "401": {
+            "timestamp": "2026-01-30T19:00:00.000Z",
             "status": 401,
-            "body": null
+            "error": "Unauthorized",
+            "message": "Full authentication is required to access this resource",
+            "path": "/api/tarot/interpret"
           },
           "403": {
             "timestamp": "2026-01-30T19:00:00.000Z",
