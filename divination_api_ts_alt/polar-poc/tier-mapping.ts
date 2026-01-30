@@ -51,7 +51,7 @@ const TIER_CONFIG: Record<UserTier, TierConfig> = {
     readingsPerDay: 3,
     features: [
       'Basic tarot readings',
-      '3 readings per week',
+      '3 readings per day',
       'Standard interpretations',
     ],
   },
