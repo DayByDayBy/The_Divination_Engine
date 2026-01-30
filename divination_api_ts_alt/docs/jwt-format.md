@@ -163,7 +163,10 @@ String userId = Jwts.parser()
      - Use `SameSite=Strict` cookie attribute
      - Consider short-lived access tokens with refresh token rotation
 4. **HTTPS Only:** Tokens must only be transmitted over HTTPS
-5. **No PII:** Tokens contain only user ID and tier, not email or other PII
+5. **Minimal Claims:** Tokens contain only user ID (UUID) and tier
+   - **Note:** While tokens exclude email and other direct identifiers, user IDs (UUIDs) are still identifiers and may be considered personal data under laws like GDPR/CCPA
+   - Minimal claims reduce but do not eliminate privacy risk
+   - Consult legal/privacy team for project-specific PII definition and handling guidance
 
 ---
 
