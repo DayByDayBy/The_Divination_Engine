@@ -91,27 +91,27 @@ export async function handlePolarWebhook(
   // 3. Idempotency check and processing in single transaction (atomic)
   try {
     await prisma.$transaction(async (tx) => {
-      // Atomic idempotency check using upsert pattern
-      // If event exists, this will match; if not, we create it
-      const existingEvent = await tx.webhookEvent.findUnique({
-        where: { eventId },
-      });
-      
-      if (existingEvent) {
-        throw new AlreadyProcessedError(eventId);
+      // Create-first pattern: attempt to create the webhook event record first
+      // This provides database-level idempotency via unique constraint on eventId
+      try {
+        await tx.webhookEvent.create({
+          data: {
+            eventId,
+            eventType: payload.type,
+            processedAt: new Date(),
+          },
+        });
+      } catch (createError: any) {
+        // Check if this is a unique constraint violation (P2002)
+        if (createError?.code === 'P2002') {
+          throw new AlreadyProcessedError(eventId);
+        }
+        // Re-throw other errors
+        throw createError;
       }
       
-      // Process the specific event type
+      // Only process the event if we successfully created the record
       await processEvent(payload, tx);
-      
-      // Record the event as processed (within same transaction)
-      await tx.webhookEvent.create({
-        data: {
-          eventId,
-          eventType: payload.type,
-          processedAt: new Date(),
-        },
-      });
     });
     
     return {
