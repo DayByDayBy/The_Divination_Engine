@@ -36,6 +36,16 @@ interface WebhookResult {
   alreadyProcessed?: boolean;
 }
 
+/**
+ * Error thrown when webhook event was already processed (for idempotency)
+ */
+class AlreadyProcessedError extends Error {
+  constructor(eventId: string) {
+    super(`Event ${eventId} already processed`);
+    this.name = 'AlreadyProcessedError';
+  }
+}
+
 // =============================================================================
 // Main Handler
 // =============================================================================
@@ -64,27 +74,33 @@ export async function handlePolarWebhook(
     };
   }
   
-  // 2. Parse payload after verification
-  const payload: PolarWebhookPayload = JSON.parse(rawBody);
-  const eventId = payload.id;
-  
-  // 3. Idempotency check at database level
-  const existingEvent = await prisma.webhookEvent.findUnique({
-    where: { eventId },
-  });
-  
-  if (existingEvent) {
+  // 2. Parse payload after verification (with error handling)
+  let payload: PolarWebhookPayload;
+  try {
+    payload = JSON.parse(rawBody);
+  } catch (parseError) {
+    console.error('Failed to parse webhook payload:', parseError);
     return {
-      success: true,
-      message: 'Event already processed',
-      eventId,
-      alreadyProcessed: true,
+      success: false,
+      message: 'Invalid JSON payload',
+      eventId: 'unknown',
     };
   }
+  const eventId = payload.id;
   
-  // 4. Process event in transaction
+  // 3. Idempotency check and processing in single transaction (atomic)
   try {
     await prisma.$transaction(async (tx) => {
+      // Atomic idempotency check using upsert pattern
+      // If event exists, this will match; if not, we create it
+      const existingEvent = await tx.webhookEvent.findUnique({
+        where: { eventId },
+      });
+      
+      if (existingEvent) {
+        throw new AlreadyProcessedError(eventId);
+      }
+      
       // Process the specific event type
       await processEvent(payload, tx);
       
@@ -105,6 +121,16 @@ export async function handlePolarWebhook(
     };
     
   } catch (error) {
+    // Handle already processed events gracefully
+    if (error instanceof AlreadyProcessedError) {
+      return {
+        success: true,
+        message: 'Event already processed',
+        eventId,
+        alreadyProcessed: true,
+      };
+    }
+    
     console.error('Webhook processing error:', error);
     return {
       success: false,
@@ -158,13 +184,23 @@ async function handleSubscriptionChange(
   
   const newTier = mapProductToTier(productId);
   
+  // Safe lookup before update to handle missing users gracefully
+  const user = await tx.user.findUnique({
+    where: { id: userId },
+  });
+  
+  if (!user) {
+    console.warn(`User not found for subscription change (id: ${userId.substring(0, 8)}...)`);
+    return;
+  }
+  
   // Update user tier atomically
   await tx.user.update({
     where: { id: userId },
     data: { tier: newTier },
   });
   
-  console.log(`Updated user ${userId} to tier ${newTier}`);
+  console.log(`Updated user ${userId.substring(0, 8)}... to tier ${newTier}`);
 }
 
 async function handleSubscriptionEnd(
@@ -177,13 +213,23 @@ async function handleSubscriptionEnd(
     throw new Error('Missing user_id in subscription end event');
   }
   
+  // Safe lookup before update
+  const user = await tx.user.findUnique({
+    where: { id: userId },
+  });
+  
+  if (!user) {
+    console.warn(`User not found for subscription end (id: ${userId.substring(0, 8)}...)`);
+    return;
+  }
+  
   // Downgrade to FREE tier
   await tx.user.update({
     where: { id: userId },
     data: { tier: 'FREE' },
   });
   
-  console.log(`Downgraded user ${userId} to FREE tier`);
+  console.log(`Downgraded user ${userId.substring(0, 8)}... to FREE tier`);
 }
 
 // =============================================================================
