@@ -1,0 +1,395 @@
+{
+  "metadata": {
+    "generated": "2026-01-30T19:00:00.000Z",
+    "source": "Java Spring Boot backend analysis",
+    "purpose": "Contract specification for TypeScript migration"
+  },
+  "endpoints": {
+    "cards": {
+      "getAllCards": {
+        "request": {
+          "method": "GET",
+          "path": "/api/cards",
+          "headers": {},
+          "auth": "none"
+        },
+        "response": {
+          "status": 200,
+          "contentType": "application/json",
+          "body": [
+            {
+              "id": 1,
+              "type": "MAJOR",
+              "suit": null,
+              "nameShort": "ar00",
+              "name": "The Fool",
+              "value": "0",
+              "intValue": 0,
+              "meaningUp": "Folly, mania, extravagance, intoxication, delirium, frenzy, bewrayment.",
+              "meaningRev": "Negligence, absence, distribution, carelessness, apathy, nullity, vanity.",
+              "description": "With light step, as if earth and its trammels had little power to restrain him..."
+            }
+          ],
+          "notes": "Returns array of all 78 tarot cards"
+        }
+      },
+      "getCardById": {
+        "request": {
+          "method": "GET",
+          "path": "/api/cards/{id}",
+          "pathParams": { "id": "number" },
+          "headers": {},
+          "auth": "none"
+        },
+        "response": {
+          "status": 200,
+          "contentType": "application/json",
+          "body": {
+            "id": 1,
+            "type": "MAJOR",
+            "suit": null,
+            "nameShort": "ar00",
+            "name": "The Fool",
+            "value": "0",
+            "intValue": 0,
+            "meaningUp": "Folly, mania, extravagance...",
+            "meaningRev": "Negligence, absence, distribution...",
+            "description": "With light step..."
+          }
+        },
+        "errorResponses": {
+          "404": {
+            "timestamp": "2026-01-30T19:00:00.000Z",
+            "status": 404,
+            "error": "Not Found",
+            "message": "Card not found with id : '999'",
+            "path": "/api/cards/999"
+          }
+        }
+      }
+    },
+    "reading": {
+      "getRandomCards": {
+        "request": {
+          "method": "GET",
+          "path": "/api/reading/{count}",
+          "pathParams": { "count": "number (3 or 10 in Java, flexible in TS)" },
+          "headers": {},
+          "auth": "optional"
+        },
+        "response": {
+          "status": 200,
+          "contentType": "application/json",
+          "body": [
+            {
+              "id": 22,
+              "type": "MAJOR",
+              "suit": null,
+              "nameShort": "ar21",
+              "name": "The World",
+              "value": "21",
+              "intValue": 21,
+              "meaningUp": "Assured success, recompense, voyage, route, emigration, flight, change of place.",
+              "meaningRev": "Inertia, fixity, stagnation, permanence.",
+              "description": "As this final message of the Major Trumps..."
+            }
+          ],
+          "notes": "Returns array of N random cards (no duplicates)"
+        }
+      },
+      "getAllReadings": {
+        "request": {
+          "method": "GET",
+          "path": "/api/reading/s",
+          "headers": {
+            "Authorization": "Bearer <jwt>"
+          },
+          "auth": "required"
+        },
+        "response": {
+          "status": 200,
+          "contentType": "application/json",
+          "body": [
+            {
+              "id": 1,
+              "userId": "550e8400-e29b-41d4-a716-446655440000",
+              "llmInterpretation": null,
+              "createdAt": "2026-01-30T19:00:00",
+              "cardReadings": [
+                {
+                  "id": 1,
+                  "card": {
+                    "id": 1,
+                    "type": "MAJOR",
+                    "suit": null,
+                    "nameShort": "ar00",
+                    "name": "The Fool",
+                    "value": "0",
+                    "intValue": 0,
+                    "meaningUp": "...",
+                    "meaningRev": "...",
+                    "description": "..."
+                  },
+                  "position": 0,
+                  "reversed": false
+                }
+              ]
+            }
+          ],
+          "notes": "Returns only readings belonging to authenticated user"
+        },
+        "errorResponses": {
+          "401": {
+            "timestamp": "2026-01-30T19:00:00.000Z",
+            "status": 401,
+            "error": "Unauthorized",
+            "message": "Full authentication is required to access this resource",
+            "path": "/api/reading/s"
+          }
+        }
+      },
+      "getReadingById": {
+        "request": {
+          "method": "GET",
+          "path": "/api/reading/s/{id}",
+          "pathParams": { "id": "number" },
+          "headers": {
+            "Authorization": "Bearer <jwt>"
+          },
+          "auth": "required"
+        },
+        "response": {
+          "status": 200,
+          "contentType": "application/json",
+          "body": {
+            "id": 1,
+            "userId": "550e8400-e29b-41d4-a716-446655440000",
+            "llmInterpretation": "The cards suggest...",
+            "createdAt": "2026-01-30T19:00:00",
+            "cardReadings": []
+          }
+        },
+        "errorResponses": {
+          "404": {
+            "timestamp": "2026-01-30T19:00:00.000Z",
+            "status": 404,
+            "error": "Not Found",
+            "message": "Reading not found with id : '999'",
+            "path": "/api/reading/s/999"
+          },
+          "403": {
+            "timestamp": "2026-01-30T19:00:00.000Z",
+            "status": 403,
+            "error": "Forbidden",
+            "message": "Access denied to reading",
+            "path": "/api/reading/s/1"
+          }
+        }
+      },
+      "createReading": {
+        "request": {
+          "method": "POST",
+          "path": "/api/reading/s",
+          "headers": {
+            "Authorization": "Bearer <jwt>",
+            "Content-Type": "application/json"
+          },
+          "auth": "required",
+          "body": {
+            "cardReadings": [
+              {
+                "card": { "id": 1 },
+                "position": 0,
+                "reversed": false
+              },
+              {
+                "card": { "id": 22 },
+                "position": 1,
+                "reversed": true
+              },
+              {
+                "card": { "id": 45 },
+                "position": 2,
+                "reversed": false
+              }
+            ]
+          }
+        },
+        "response": {
+          "status": 201,
+          "contentType": "application/json",
+          "body": {
+            "id": 42,
+            "userId": "550e8400-e29b-41d4-a716-446655440000",
+            "llmInterpretation": null,
+            "createdAt": "2026-01-30T19:00:00",
+            "cardReadings": []
+          }
+        }
+      },
+      "deleteReading": {
+        "request": {
+          "method": "DELETE",
+          "path": "/api/reading/s/{id}",
+          "pathParams": { "id": "number" },
+          "headers": {
+            "Authorization": "Bearer <jwt>"
+          },
+          "auth": "required"
+        },
+        "response": {
+          "status": 204,
+          "body": null
+        },
+        "errorResponses": {
+          "404": {
+            "timestamp": "2026-01-30T19:00:00.000Z",
+            "status": 404,
+            "error": "Not Found",
+            "message": "Reading not found with id : '999'",
+            "path": "/api/reading/s/999"
+          }
+        }
+      }
+    },
+    "auth": {
+      "register": {
+        "request": {
+          "method": "POST",
+          "path": "/api/auth/register",
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "auth": "none",
+          "body": {
+            "email": "user@example.com",
+            "password": "securePassword123"
+          }
+        },
+        "response": {
+          "status": 200,
+          "contentType": "application/json",
+          "body": {
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "type": "Bearer",
+            "email": "user@example.com",
+            "tier": "FREE"
+          }
+        },
+        "errorResponses": {
+          "400_duplicate": {
+            "status": 400,
+            "body": "User already exists"
+          },
+          "400_invalid": {
+            "status": 400,
+            "body": "Invalid request"
+          }
+        }
+      },
+      "login": {
+        "request": {
+          "method": "POST",
+          "path": "/api/auth/login",
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "auth": "none",
+          "body": {
+            "email": "user@example.com",
+            "password": "securePassword123"
+          }
+        },
+        "response": {
+          "status": 200,
+          "contentType": "application/json",
+          "body": {
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "type": "Bearer",
+            "email": "user@example.com",
+            "tier": "FREE"
+          }
+        },
+        "errorResponses": {
+          "401": {
+            "status": 401,
+            "body": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "interpret": {
+      "interpret": {
+        "request": {
+          "method": "POST",
+          "path": "/api/tarot/interpret",
+          "headers": {
+            "Authorization": "Bearer <jwt>",
+            "Content-Type": "application/json"
+          },
+          "auth": "required",
+          "body": {
+            "readingId": 1,
+            "userInput": "What does this reading mean for my career?",
+            "cards": [
+              {
+                "name": "The Fool",
+                "reversed": false,
+                "meaningUp": "New beginnings...",
+                "meaningRev": "Recklessness...",
+                "position": 0
+              }
+            ],
+            "spreadType": "THREE_CARD",
+            "userContext": "I'm considering a job change"
+          }
+        },
+        "response": {
+          "status": 200,
+          "contentType": "application/json",
+          "body": {
+            "readingId": 1,
+            "interpretation": "Based on the cards drawn, your reading suggests...",
+            "timestamp": "2026-01-30T19:00:00.000Z",
+            "spreadType": "THREE_CARD",
+            "tier": "FREE"
+          }
+        },
+        "errorResponses": {
+          "401": {
+            "status": 401,
+            "body": null
+          },
+          "403": {
+            "timestamp": "2026-01-30T19:00:00.000Z",
+            "status": 403,
+            "error": "Forbidden",
+            "message": "User tier is not available",
+            "path": "/api/tarot/interpret"
+          },
+          "429": {
+            "timestamp": "2026-01-30T19:00:00.000Z",
+            "status": 429,
+            "error": "Too Many Requests",
+            "message": "Rate limit exceeded. Upgrade your tier for more readings.",
+            "path": "/api/tarot/interpret"
+          }
+        }
+      }
+    }
+  },
+  "jwtClaims": {
+    "sub": "550e8400-e29b-41d4-a716-446655440000",
+    "tier": "FREE",
+    "iat": 1706637600,
+    "exp": 1706724000,
+    "notes": "JWT uses HS256 algorithm. 'sub' is user UUID. 'tier' is one of: FREE, BASIC, PREMIUM"
+  },
+  "knownBehaviours": {
+    "randomCardSelection": "Java uses ORDER BY random() - inefficient for large datasets. TS should use application-layer shuffling.",
+    "hardcodedEndpoints": "Java has /reading/3 and /reading/10 hardcoded. TS should accept any count via /reading/{count}.",
+    "jwtValidation": "Java filter allows invalid tokens through in some cases. TS must reject invalid tokens immediately.",
+    "errorFormat": "Java uses Spring's default error format with timestamp, status, error, message, path fields.",
+    "timestamps": "Java uses LocalDateTime without timezone info. TS should use ISO 8601 with timezone for consistency."
+  }
+}
