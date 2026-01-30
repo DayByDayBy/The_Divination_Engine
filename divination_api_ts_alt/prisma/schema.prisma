@@ -1,0 +1,114 @@
+// Prisma Schema for Divination Engine
+// Generated: 2026-01-30
+// Source: Java JPA entities analysis
+// 
+// This schema must match the existing Supabase database exactly.
+// Run `prisma db pull` to introspect and verify against production.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// Enums
+// =============================================================================
+
+enum CardType {
+  MAJOR
+  MINOR
+
+  @@map("card_type")
+}
+
+enum UserTier {
+  FREE
+  BASIC
+  PREMIUM
+
+  @@map("user_tier")
+}
+
+// =============================================================================
+// Models
+// =============================================================================
+
+/// Tarot cards - 78 cards in a standard deck
+model Card {
+  id          Int       @id @default(autoincrement())
+  type        CardType
+  suit        String?
+  nameShort   String    @map("name_short")
+  name        String
+  value       String
+  intValue    Int       @map("intValue")
+  meaningUp   String    @map("meaning_up") @db.Text
+  meaningRev  String    @map("meaning_rev") @db.Text
+  description String?   @db.Text
+
+  // Relations
+  cardReadings CardInReading[]
+
+  @@map("cards")
+}
+
+/// Users with authentication
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  tier         UserTier  @default(FREE)
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  readings Reading[]
+
+  @@map("users")
+}
+
+/// Saved tarot readings
+model Reading {
+  id                Int       @id @default(autoincrement())
+  userId            String?   @map("user_id") @db.Uuid
+  llmInterpretation String?   @map("llm_interpretation") @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user         User?           @relation(fields: [userId], references: [id])
+  cardReadings CardInReading[]
+
+  @@map("readings")
+}
+
+/// Junction table: cards in a reading with position and orientation
+model CardInReading {
+  id        Int     @id @default(autoincrement())
+  readingId Int     @map("reading_id")
+  cardId    Int     @map("card_id")
+  position  Int
+  reversed  Boolean @default(false)
+
+  // Relations
+  reading Reading @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  card    Card    @relation(fields: [cardId], references: [id])
+
+  @@map("card_readings")
+}
+
+// =============================================================================
+// Future: Webhook Events for Polar Integration (P0-004)
+// =============================================================================
+
+/// Idempotency table for webhook processing
+model WebhookEvent {
+  id          Int      @id @default(autoincrement())
+  eventId     String   @unique @map("event_id")
+  eventType   String   @map("event_type")
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@map("webhook_events")
+}
