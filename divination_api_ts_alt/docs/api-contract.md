@@ -432,8 +432,13 @@ Generates LLM interpretation of a reading.
 ```
 
 **Validation & Constraints:**
+- `readingId` is **optional**:
+  - When provided: Server fetches cards from the stored reading and ignores the `cards` array
+  - When omitted: Client must supply `cards` array for ad-hoc interpretation
+- `cards` array:
+  - Required when `readingId` is omitted
+  - Ignored when `readingId` is provided (server uses stored reading data)
 - `userInput` maximum length: 500 characters
-- `cards` must match the cards from `readingId`
 - Request timeout: 30 seconds (LLM processing) → 504 Gateway Timeout on exceed
 
 **Tier-Specific Rate Limits:**
