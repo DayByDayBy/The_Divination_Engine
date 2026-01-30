@@ -80,7 +80,7 @@ Phase 0 validated all critical risk areas for the TypeScript backend migration. 
 | Criterion | Status | Evidence |
 |-----------|--------|----------|
 | Can verify webhook signatures | ✅ PASS | HMAC-SHA256 verification works |
-| Can process webhooks idempotently | ✅ PASS | Database-level idempotency enforced |
+| Can process webhooks idempotently | ✅ PASS | POC demonstrates pattern; webhook_events table requires Phase 1 migration |
 | Can create checkout sessions | ✅ PASS | Polar SDK integration works |
 | Can map products to tiers | ✅ PASS | Tier mapping defined |
 
@@ -147,7 +147,9 @@ Phase 0 validated all critical risk areas for the TypeScript backend migration. 
 
 2. **Webhook Events Table**
    - Add `webhook_events` table for Polar idempotency
-   - Migration required
+   - **Status:** POC code demonstrates pattern, but table does not exist in production schema
+   - **Action Required:** Create migration in Phase 1 to add table to production database
+   - **Schema:** `id`, `event_id` (unique), `event_type`, `processed_at`
 
 3. **Enhanced Error Responses**
    - Structured error format
