@@ -79,7 +79,7 @@ CREATE TABLE users (
 ```sql
 CREATE TABLE readings (
   id SERIAL PRIMARY KEY,
-  user_id UUID REFERENCES users(id),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
   llm_interpretation TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT now()
 );
@@ -87,6 +87,7 @@ CREATE TABLE readings (
 
 **Notes:**
 - `user_id` nullable for anonymous readings
+- `ON DELETE SET NULL` preserves reading history when user is deleted
 - `llm_interpretation` populated after LLM call
 
 ### card_readings
@@ -107,7 +108,7 @@ CREATE TABLE card_readings (
 - `position` is 0-indexed card position in spread
 - `reversed` indicates if card is upside-down
 
-### webhook_events (NEW)
+### webhook_events
 
 ```sql
 CREATE TABLE webhook_events (
@@ -119,9 +120,9 @@ CREATE TABLE webhook_events (
 ```
 
 **Notes:**
-- New table for Polar webhook idempotency
-- `event_id` is Polar's event ID
-- Used to prevent duplicate processing
+- Table for Polar webhook idempotency (to be created in Phase 1 migration)
+- `event_id` is Polar's event ID (unique constraint prevents duplicates)
+- Used to prevent duplicate webhook processing
 
 ---
 
