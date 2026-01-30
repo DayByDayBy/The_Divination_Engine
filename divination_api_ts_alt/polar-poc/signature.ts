@@ -38,8 +38,9 @@ export function verifyWebhookSignature(
     const timestampAge = Date.now() - parts.timestamp * 1000;
     const maxAge = 5 * 60 * 1000; // 5 minutes
     
-    if (timestampAge > maxAge) {
-      console.error('Webhook timestamp too old');
+    // Reject timestamps outside the allowed window (too old OR in the future)
+    if (Math.abs(timestampAge) > maxAge) {
+      console.error(timestampAge < 0 ? 'Webhook timestamp in future' : 'Webhook timestamp too old');
       return false;
     }
 
