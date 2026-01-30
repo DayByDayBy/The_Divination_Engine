@@ -527,11 +527,13 @@ All errors follow this structure (matching Spring's default):
 |--------|------------|----------|
 | 400 | Bad Request | Validation errors |
 | 401 | Unauthorized | Missing/invalid token |
+| 402 | Payment Required | Quota exhausted (interpret endpoint) |
 | 403 | Forbidden | Valid token, no permission |
 | 404 | Not Found | Resource doesn't exist |
 | 409 | Conflict | Resource already exists |
 | 429 | Too Many Requests | Rate limit exceeded |
 | 500 | Internal Server Error | Unexpected errors |
+| 504 | Gateway Timeout | LLM processing timeout (interpret endpoint) |
 
 ---
 
