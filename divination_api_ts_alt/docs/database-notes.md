@@ -178,8 +178,22 @@ CREATE TABLE webhook_events (
 **Recommended Implementation:**
 ```typescript
 async function getRandomCards(count: number): Promise<Card[]> {
-  const totalCards = await prisma.card.count();
-  const randomIds = generateRandomUniqueIds(totalCards, count);
+  // Fetch all existing card IDs (don't assume sequential)
+  const allCards = await prisma.card.findMany({ select: { id: true } });
+  
+  if (count >= allCards.length) {
+    return prisma.card.findMany();
+  }
+  
+  // Fisher-Yates shuffle to select random unique IDs
+  const shuffled = [...allCards];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  // Return first 'count' cards from shuffled array
+  const randomIds = shuffled.slice(0, count).map(c => c.id);
   return prisma.card.findMany({
     where: { id: { in: randomIds } }
   });
