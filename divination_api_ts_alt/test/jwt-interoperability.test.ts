@@ -198,10 +198,10 @@ describe('JWT Interoperability Tests', () => {
       }
     });
     
-    test('should reject token with missing claims', async () => {
+    test('should handle token with missing optional claims gracefully', async () => {
       const secretKey = getSecretKey(TEST_SECRET);
       
-      // Token without tier claim
+      // Token without tier claim - tier is optional, validation should still succeed
       const tokenNoTier = await new SignJWT({})
         .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
         .setSubject(TEST_USER_ID)
