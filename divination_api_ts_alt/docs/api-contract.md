@@ -127,11 +127,25 @@ Returns N random cards for a reading.
 ]
 ```
 
+**Validation:**
+- `count` must be an integer between 1 and 78 inclusive
+- Values ≤0 or >78 return 400 Bad Request
+
+**Response (400):**
+```json
+{
+  "timestamp": "2026-01-30T19:00:00.000Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Count must be between 1 and 78",
+  "path": "/api/reading/5000"
+}
+```
+
 **Notes:**
 - Java hardcodes `/reading/3` and `/reading/10` - TypeScript accepts any count
 - **DO NOT use `ORDER BY random()`** - use application-layer shuffling
 - No duplicate cards in response
-- Handle edge cases: count > 78, count <= 0
 
 ---
 
@@ -185,8 +199,28 @@ Returns all readings for the authenticated user.
 }
 ```
 
+**Query Parameters:**
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `page` | number | 0 | Page number (0-indexed) |
+| `size` | number | 20 | Items per page (max 100) |
+| `sort` | string | "createdAt,desc" | Sort field and direction |
+
+**Response (200) - Paginated:**
+```json
+{
+  "content": [...],
+  "page": 0,
+  "size": 20,
+  "totalElements": 42,
+  "totalPages": 3
+}
+```
+
 **Notes:**
 - Returns only readings belonging to the authenticated user (filter by userId from JWT)
+- Size is capped at 100; values >100 are reduced to 100
 
 ---
 
@@ -242,6 +276,13 @@ Creates a new reading.
 }
 ```
 
+**Validation Rules:**
+- `cardReadings` is required, min 1, max 78 elements
+- `cardReadings[].position` must be sequential integers starting at 0 (0, 1, 2, ...)
+- `cardReadings[].card.id` must reference an existing card (1-78)
+- Duplicate card IDs within the same reading are forbidden
+- `cardReadings[].reversed` is a required boolean
+
 **Response (201):**
 ```json
 {
@@ -250,6 +291,17 @@ Creates a new reading.
   "llmInterpretation": null,
   "createdAt": "2026-01-30T19:00:00",
   "cardReadings": [...]
+}
+```
+
+**Response (400) - Validation Error:**
+```json
+{
+  "timestamp": "2026-01-30T19:00:00.000Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Duplicate card ID 22 in reading",
+  "path": "/api/reading/s"
 }
 ```
 
@@ -291,7 +343,15 @@ Registers a new user.
 }
 ```
 
-**Response (200):**
+**Validation Rules:**
+- Email must conform to RFC 5322 and be ≤255 characters
+- Password must be minimum 8 characters with uppercase, lowercase, number, and special character
+
+**Security:**
+- Password hashed with BCrypt (cost factor 12)
+- JWT expires 24 hours from issuance
+
+**Response (201):**
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -304,7 +364,6 @@ Registers a new user.
 **Response (400):** `"User already exists"` or `"Invalid request"`
 
 **Notes:**
-- Password hashed with BCrypt (10+ rounds)
 - New users default to FREE tier
 - Returns JWT immediately (auto-login)
 
@@ -372,7 +431,42 @@ Generates LLM interpretation of a reading.
 }
 ```
 
+**Validation & Constraints:**
+- `userInput` maximum length: 500 characters
+- `cards` must match the cards from `readingId`
+- Request timeout: 30 seconds (LLM processing) → 504 Gateway Timeout on exceed
+
+**Tier-Specific Rate Limits:**
+
+| Tier | Limit |
+|------|-------|
+| FREE | 10/min |
+| BASIC | 30/min |
+| PREMIUM | 100/min |
+
 **Response (429):** Rate limit exceeded
+
+**Response (402) - Quota Exhausted (Paid Tiers):**
+```json
+{
+  "timestamp": "2026-01-30T19:00:00.000Z",
+  "status": 402,
+  "error": "Payment Required",
+  "message": "Monthly interpretation quota exhausted. Please upgrade or wait for quota reset.",
+  "path": "/api/tarot/interpret"
+}
+```
+
+**Response (504) - Timeout:**
+```json
+{
+  "timestamp": "2026-01-30T19:00:00.000Z",
+  "status": 504,
+  "error": "Gateway Timeout",
+  "message": "Interpretation request timed out",
+  "path": "/api/tarot/interpret"
+}
+```
 
 ---
 
@@ -391,6 +485,21 @@ Generates LLM interpretation of a reading.
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJ0aWVyIjoiRlJFRSIsImlhdCI6MTcwNjYzNzYwMCwiZXhwIjoxNzA2NzI0MDAwfQ.xxx
 ```
+
+### Security Requirements
+
+**Secret Key:**
+- Minimum 256 bits (32 bytes) of cryptographically secure random data
+- Store in environment variables or secrets manager (never in source code)
+- Support key rotation via `kid` header with multiple active keys for zero-downtime rotation
+
+**Token Expiration:**
+- Default: 24 hours (configurable per tier)
+- Refresh tokens: 7-30 days (separate from access tokens)
+
+**Token Revocation:**
+- Maintain deny-list of revoked token JTIs with TTL-based cleanup
+- Prefer short-lived access tokens with refresh tokens for security
 
 ---
 
@@ -494,11 +603,47 @@ interface InterpretResponse {
 
 ## Rate Limiting
 
-| Endpoint | Limit | Scope |
-|----------|-------|-------|
-| `/auth/login` | 5/min | IP |
-| `/auth/register` | 3/min | IP |
-| `/reading/*` | 60/min | User |
-| `/tarot/interpret` | 10/min (tier-dependent) | User |
+| Endpoint | Limit | Scope | Tracking |
+|----------|-------|-------|----------|
+| `/auth/login` | 5/min | IP | IP address |
+| `/auth/register` | 3/min | IP | IP address |
+| `/reading/*` | 60/min | User | JWT `sub` claim (fallback: IP) |
+| `/tarot/interpret` | Tier-dependent | User | JWT `sub` claim (fallback: IP) |
 
-Rate limit responses return HTTP 429 with `Retry-After` header.
+**Interpret Endpoint Tier Limits:**
+
+| Tier | Limit |
+|------|-------|
+| FREE | 10/min |
+| BASIC | 30/min |
+| PREMIUM | 100/min |
+
+### Response Headers
+
+All responses include:
+- `X-RateLimit-Limit`: Maximum requests allowed in window
+- `X-RateLimit-Remaining`: Requests remaining in current window
+- `X-RateLimit-Reset`: Unix timestamp when the window resets
+
+429 responses additionally include:
+- `Retry-After`: Seconds until rate limit resets
+
+### Example 429 Response
+
+**Headers:**
+```
+X-RateLimit-Limit: 10
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1706637660
+Retry-After: 45
+```
+
+**Body:**
+```json
+{
+  "timestamp": "2026-01-30T19:00:00.000Z",
+  "status": 429,
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded. Try again in 45 seconds.",
+  "path": "/api/tarot/interpret"
+}
