@@ -188,7 +188,28 @@ describe('Prisma Compatibility Tests', () => {
   describe('Reading CRUD Operations', () => {
     
     let testReadingId: number;
-    const testUserId = '550e8400-e29b-41d4-a716-446655440000';
+    let testUserId: string;
+    
+    beforeAll(async () => {
+      // Create a test user to satisfy FK constraint
+      const user = await prisma.user.create({
+        data: {
+          email: `test-reading-${Date.now()}@example.com`,
+          passwordHash: '$2b$10$hashedpasswordhere',
+          tier: UserTier.FREE,
+        },
+      });
+      testUserId = user.id;
+    });
+    
+    afterAll(async () => {
+      // Clean up test user
+      if (testUserId) {
+        await prisma.user.delete({ where: { id: testUserId } }).catch(() => {
+          // Ignore errors if user already deleted
+        });
+      }
+    });
     
     test('should create a reading', async () => {
       const { result, durationMs } = await measureQueryTime(
