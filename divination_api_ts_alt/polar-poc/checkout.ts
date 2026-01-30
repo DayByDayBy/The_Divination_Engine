@@ -250,32 +250,41 @@ export async function ensureCustomer(
   email: string,
   accessToken: string
 ): Promise<string> {
-  try {
-    const polar = createPolarClient(accessToken);
+  const polar = createPolarClient(accessToken);
 
-    // Search for existing customer by metadata (not by ID)
-    try {
-      const customers = await polar.customers.list({
-        metadata: { userId },
-      });
-      
-      if (customers.items.length > 0) {
-        return customers.items[0].id;
-      }
-    } catch (searchError) {
-      // Log but continue to create if search fails
-      console.warn('Customer search failed, attempting create:', searchError);
-    }
-    
-    // Customer doesn't exist, create new one with metadata
+  // Search for existing customer by metadata (not by ID)
+  const customers = await polar.customers.list({
+    metadata: { userId },
+  });
+  
+  if (customers.items.length > 0) {
+    return customers.items[0].id;
+  }
+  
+  // Customer doesn't exist, attempt to create new one with metadata
+  try {
     const customer = await polar.customers.create({
       email,
       metadata: { userId },
     });
     return customer.id;
-
-  } catch (error) {
-    console.error('Ensure customer error:', error);
-    throw error;
+  } catch (createError) {
+    // Handle race condition: another concurrent request may have created the customer
+    // Check if error is due to duplicate customer (Polar-specific error detection)
+    const errorMessage = createError instanceof Error ? createError.message : String(createError);
+    if (errorMessage.includes('already exists') || errorMessage.includes('duplicate')) {
+      // Re-query to get the existing customer
+      const retryCustomers = await polar.customers.list({
+        metadata: { userId },
+      });
+      
+      if (retryCustomers.items.length > 0) {
+        return retryCustomers.items[0].id;
+      }
+    }
+    
+    // If not a duplicate error or retry failed, propagate the error
+    console.error('Ensure customer error:', createError);
+    throw createError;
   }
 }
