@@ -154,7 +154,14 @@ String userId = Jwts.parser()
 
 1. **Secret Storage:** Never commit secrets to repository
 2. **Secret Rotation:** Plan for key rotation without breaking existing tokens
-3. **Token Storage:** Frontend stores in localStorage (as per current implementation)
+3. **Token Storage:**
+   - **Current:** Frontend stores in localStorage (as per current implementation)
+   - **Security Risk:** localStorage is vulnerable to XSS attacks - any script running on the page can access tokens
+   - **Recommendation:** Migrate to httpOnly cookies for production
+   - **Alternatives/Mitigations:**
+     - Implement strict Content Security Policy (CSP)
+     - Use `SameSite=Strict` cookie attribute
+     - Consider short-lived access tokens with refresh token rotation
 4. **HTTPS Only:** Tokens must only be transmitted over HTTPS
 5. **No PII:** Tokens contain only user ID and tier, not email or other PII
 
