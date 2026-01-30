@@ -57,10 +57,17 @@ export async function createCheckout(
   try {
     const polar = createPolarClient(accessToken);
 
-    // Create checkout session
+    // Ensure customer exists in Polar and get their Polar customer ID
+    const polarCustomerId = await ensureCustomer(
+      config.userId,
+      config.userEmail,
+      accessToken
+    );
+
+    // Create checkout session with Polar customer ID (not app user ID)
     const checkout = await polar.checkouts.create({
       productId: config.productId,
-      customerId: config.userId,
+      customerId: polarCustomerId,
       customerEmail: config.userEmail,
       successUrl: config.successUrl,
       ...(config.cancelUrl && { cancelUrl: config.cancelUrl }),
@@ -182,11 +189,31 @@ export async function listProducts(
 }>> {
   try {
     const polar = createPolarClient(accessToken);
-    const products = await polar.products.list({
+    
+    // Paginate through all products
+    let page = 1;
+    const pageSize = 100;
+    let products = await polar.products.list({
       organizationId,
+      page,
+      limit: pageSize,
     });
+    
+    // Collect all products across pages
+    const allProducts = [...products.items];
+    
+    // Continue fetching while there are more pages
+    while (products.items.length === pageSize) {
+      page++;
+      products = await polar.products.list({
+        organizationId,
+        page,
+        limit: pageSize,
+      });
+      allProducts.push(...products.items);
+    }
 
-    return products.items.map((product) => ({
+    return allProducts.map((product) => ({
       id: product.id,
       name: product.name,
       description: product.description,
@@ -226,18 +253,26 @@ export async function ensureCustomer(
   try {
     const polar = createPolarClient(accessToken);
 
-    // Try to get existing customer
+    // Search for existing customer by metadata (not by ID)
     try {
-      const customer = await polar.customers.get({ id: userId });
-      return customer.id;
-    } catch {
-      // Customer doesn't exist, create new one
-      const customer = await polar.customers.create({
-        email,
+      const customers = await polar.customers.list({
         metadata: { userId },
       });
-      return customer.id;
+      
+      if (customers.items.length > 0) {
+        return customers.items[0].id;
+      }
+    } catch (searchError) {
+      // Log but continue to create if search fails
+      console.warn('Customer search failed, attempting create:', searchError);
     }
+    
+    // Customer doesn't exist, create new one with metadata
+    const customer = await polar.customers.create({
+      email,
+      metadata: { userId },
+    });
+    return customer.id;
 
   } catch (error) {
     console.error('Ensure customer error:', error);
