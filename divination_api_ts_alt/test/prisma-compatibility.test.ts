@@ -39,24 +39,22 @@ async function measureQueryTime<T>(
  * This is the recommended approach for the TypeScript backend
  */
 async function getRandomCardsEfficient(count: number): Promise<{ id: number }[]> {
-  // Get total count
-  const totalCards = await prisma.card.count();
+  // Fetch all existing card IDs (don't assume sequential)
+  const allCards = await prisma.card.findMany({ select: { id: true } });
   
-  if (count >= totalCards) {
-    return prisma.card.findMany({ select: { id: true } });
+  if (count >= allCards.length) {
+    return allCards;
   }
   
-  // Generate random unique indices
-  const indices = new Set<number>();
-  while (indices.size < count) {
-    indices.add(Math.floor(Math.random() * totalCards) + 1);
+  // Fisher-Yates shuffle to select random unique cards
+  const shuffled = [...allCards];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   
-  // Fetch cards by IDs
-  return prisma.card.findMany({
-    where: { id: { in: Array.from(indices) } },
-    select: { id: true },
-  });
+  // Return first 'count' cards from shuffled array
+  return shuffled.slice(0, count);
 }
 
 // =============================================================================
