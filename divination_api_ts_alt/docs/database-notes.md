@@ -182,7 +182,16 @@ async function getRandomCards(count: number): Promise<Card[]> {
   const allCards = await prisma.card.findMany({ select: { id: true } });
   
   if (count >= allCards.length) {
-    return prisma.card.findMany();
+    // Still shuffle when returning all cards
+    const shuffled = [...allCards];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const allIds = shuffled.map(c => c.id);
+    return prisma.card.findMany({
+      where: { id: { in: allIds } }
+    });
   }
   
   // Fisher-Yates shuffle to select random unique IDs

@@ -15,7 +15,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@polar-sh/sdk": "^0.9.0",
+    "@polar-sh/sdk": "^0.42.5",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "jose": "^5.9.6",
