@@ -12,7 +12,7 @@ import { Polar } from '@polar-sh/sdk';
 // =============================================================================
 
 export interface CheckoutConfig {
-  productId: string;
+  productId: string; // Single product ID that will be converted to array in checkout creation
   userId: string;
   userEmail: string;
   successUrl: string;
@@ -66,7 +66,7 @@ export async function createCheckout(
 
     // Create checkout session with Polar customer ID (not app user ID)
     const checkout = await polar.checkouts.create({
-      productId: config.productId,
+      products: [config.productId], // Updated: products is now an array
       customerId: polarCustomerId,
       customerEmail: config.userEmail,
       successUrl: config.successUrl,
@@ -101,7 +101,7 @@ export async function getCheckoutStatus(
 ): Promise<{
   status: string;
   customerId?: string;
-  productId?: string;
+  products?: Array<{ id: string; priceId?: string }>; // Updated type to match new API
 }> {
   try {
     const polar = createPolarClient(accessToken);
@@ -109,8 +109,8 @@ export async function getCheckoutStatus(
 
     return {
       status: checkout.status,
-      customerId: checkout.customerId,
-      productId: checkout.productId,
+      customerId: checkout.customerId || undefined,
+      products: checkout.products, // Updated to return products array
     };
 
   } catch (error) {
@@ -190,37 +190,35 @@ export async function listProducts(
   try {
     const polar = createPolarClient(accessToken);
     
-    // Paginate through all products
-    let page = 1;
-    const pageSize = 100;
-    let products = await polar.products.list({
+    // Get products using the iterator
+    const productsIterator = await polar.products.list({
       organizationId,
-      page,
-      limit: pageSize,
+      isArchived: false,
     });
     
-    // Collect all products across pages
-    const allProducts = [...products.items];
-    
-    // Continue fetching while there are more pages
-    while (products.items.length === pageSize) {
-      page++;
-      products = await polar.products.list({
-        organizationId,
-        page,
-        limit: pageSize,
-      });
-      allProducts.push(...products.items);
+    const allProducts = [];
+    // The SDK returns a PageIterator, we need to iterate through it
+    if (productsIterator && typeof productsIterator.next === 'function') {
+      // It's an iterator
+      for await (const product of productsIterator) {
+        allProducts.push(product);
+      }
+    } else if (Array.isArray(productsIterator)) {
+      // It's an array
+      allProducts.push(...productsIterator);
+    } else if ((productsIterator as any).items) {
+      // It has items property (cast to any to bypass type check)
+      allProducts.push(...(productsIterator as any).items);
     }
 
-    return allProducts.map((product) => ({
+    return allProducts.map((product: any) => ({
       id: product.id,
       name: product.name,
       description: product.description,
-      prices: product.prices.map((price) => ({
+      prices: (product.prices || []).map((price: any) => ({
         id: price.id,
-        amount: price.priceAmount,
-        currency: price.priceCurrency,
+        amount: price.priceAmount || price.amount,
+        currency: price.priceCurrency || price.currency,
         recurring: price.recurring
           ? { interval: price.recurring.interval }
           : undefined,
@@ -253,12 +251,27 @@ export async function ensureCustomer(
   const polar = createPolarClient(accessToken);
 
   // Search for existing customer by metadata (not by ID)
-  const customers = await polar.customers.list({
+  const customersIterator = await polar.customers.list({
     metadata: { userId },
   });
   
-  if (customers.items.length > 0) {
-    return customers.items[0].id;
+  const customers = [];
+  // Handle different response formats
+  if (customersIterator && typeof customersIterator.next === 'function') {
+    // It's an iterator
+    for await (const customer of customersIterator) {
+      customers.push(customer);
+    }
+  } else if (Array.isArray(customersIterator)) {
+    // It's an array
+    customers.push(...customersIterator);
+  } else if ((customersIterator as any).items) {
+    // It has items property (cast to any to bypass type check)
+    customers.push(...(customersIterator as any).items);
+  }
+  
+  if (customers.length > 0) {
+    return customers[0].id;
   }
   
   // Customer doesn't exist, attempt to create new one with metadata
@@ -274,12 +287,27 @@ export async function ensureCustomer(
     const errorMessage = createError instanceof Error ? createError.message : String(createError);
     if (errorMessage.includes('already exists') || errorMessage.includes('duplicate')) {
       // Re-query to get the existing customer
-      const retryCustomers = await polar.customers.list({
+      const retryCustomersIterator = await polar.customers.list({
         metadata: { userId },
       });
       
-      if (retryCustomers.items.length > 0) {
-        return retryCustomers.items[0].id;
+      const retryCustomers = [];
+      // Handle different response formats
+      if (retryCustomersIterator && typeof retryCustomersIterator.next === 'function') {
+        // It's an iterator
+        for await (const customer of retryCustomersIterator) {
+          retryCustomers.push(customer);
+        }
+      } else if (Array.isArray(retryCustomersIterator)) {
+        // It's an array
+        retryCustomers.push(...retryCustomersIterator);
+      } else if ((retryCustomersIterator as any).items) {
+        // It has items property (cast to any to bypass type check)
+        retryCustomers.push(...(retryCustomersIterator as any).items);
+      }
+      
+      if (retryCustomers.length > 0) {
+        return retryCustomers[0].id;
       }
     }
     
