@@ -23,9 +23,9 @@ export const CreateReadingRequestSchema = z.object({
   cardReadings: z.array(
     z.object({
       card: z.object({
-        id: z.number(),
+        id: z.number().int().positive(),
       }),
-      position: z.number(),
+      position: z.number().int().min(1).max(78),
       reversed: z.boolean(),
     })
   ).min(1).max(78), // At least 1 card, max 78 cards
