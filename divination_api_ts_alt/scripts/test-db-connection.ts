@@ -9,7 +9,8 @@ async function main() {
   const isConnected = await testDatabaseConnection()
   
   if (!isConnected) {
-    process.exit(1)
+    await prisma.$disconnect();
+    process.exit(1);
   }
   
   // Test basic query
@@ -32,4 +33,7 @@ async function main() {
   }
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
