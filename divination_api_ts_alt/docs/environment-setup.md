@@ -100,13 +100,15 @@ Set environment variables according to your hosting provider's documentation.
 
 ### Development
 - Use `http://localhost:3000` for `NEXT_PUBLIC_URL`
-- Can use weaker JWT secret for local development
+- Use a strong, unique JWT secret per environment
 - Use Polar sandbox environment
 
 ### Production
 - Use HTTPS URL for `NEXT_PUBLIC_URL`
-- Use strong, randomly generated secrets
+- Use strong, randomly generated, unique secrets
 - Use Polar production environment
+
+**Security Note:** Never reuse production secrets in development. Store secrets in environment variables or a secrets manager and ensure they can be rotated.
 - Enable all security features
 
 ## Troubleshooting
