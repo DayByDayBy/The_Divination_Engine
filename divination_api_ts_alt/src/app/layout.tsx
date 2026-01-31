@@ -1,4 +1,4 @@
-// Root layout for API routes only
+// Root layout for UI pages in the app directory (does not apply to API route handlers)
 export default function RootLayout({
   children,
 }: {
