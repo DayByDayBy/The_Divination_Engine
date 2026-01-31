@@ -21,7 +21,9 @@ cp .env.local.example .env.local
 |----------|-------------|---------|
 | `DATABASE_URL` | PostgreSQL connection with pooling | `postgresql://postgres:pass@db.xxx.supabase.co:5432/postgres?pgbouncer=true&connection_limit=1` |
 | `DIRECT_URL` | Direct connection for migrations | `postgresql://postgres:pass@db.xxx.supabase.co:5432/postgres` |
-| `JWT_SECRET` | 256-bit secret for JWT tokens | `your-256-bit-secret-here` |
+| `JWT_SECRET` | 256-bit secret for JWT tokens | `your-256-bit-secret-here` (replace with generated secret) |
+
+**Note:** Generate a true 256-bit (32-byte) secret using a secure RNG: `openssl rand -base64 32`
 | `NEXT_PUBLIC_URL` | Application URL | `http://localhost:3000` |
 
 ### Optional Variables (Future Use)
