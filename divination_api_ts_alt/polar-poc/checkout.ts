@@ -285,7 +285,17 @@ export async function ensureCustomer(
     // Handle race condition: another concurrent request may have created the customer
     // Check if error is due to duplicate customer (Polar-specific error detection)
     const errorMessage = createError instanceof Error ? createError.message : String(createError);
-    if (errorMessage.includes('already exists') || errorMessage.includes('duplicate')) {
+    
+    // Check structured error properties first
+    const isDuplicate = 
+      (createError as any).code === 'duplicate' ||
+      (createError as any).status === 409 ||
+      (createError as any).statusCode === 409 ||
+      (createError as any).type === 'duplicate_customer' ||
+      errorMessage.includes('already exists') ||
+      errorMessage.includes('duplicate');
+    
+    if (isDuplicate) {
       // Re-query to get the existing customer
       const retryCustomersIterator = await polar.customers.list({
         metadata: { userId },
