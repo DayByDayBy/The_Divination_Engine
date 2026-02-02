@@ -88,7 +88,7 @@ ehthumbs.db
 Thumbs.db
 
 # important:
-.planning
-prompts
+.planning/
+prompts/
 
 reviews/
