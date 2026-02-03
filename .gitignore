@@ -92,3 +92,6 @@ Thumbs.db
 prompts/
 
 reviews/
+
+
+.env.local

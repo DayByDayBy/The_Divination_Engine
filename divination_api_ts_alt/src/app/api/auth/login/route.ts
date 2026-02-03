@@ -20,6 +20,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
+      // Perform dummy bcrypt compare to prevent timing attacks
+      // Use a pre-computed hash of a fake password
+      const fakeHash = '$2b$12$dummy.hash.for.timing.attack.prevention';
+      await compare(password, fakeHash);
       throw new AuthError('Invalid credentials');
     }
 
