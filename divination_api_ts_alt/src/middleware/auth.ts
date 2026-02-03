@@ -27,6 +27,15 @@ export async function requireAuth(request: NextRequest): Promise<AuthContext> {
   try {
     const payload = await verifyJwt(token);
     
+    // Validate payload fields are present and correct type
+    if (!payload.sub || typeof payload.sub !== 'string') {
+      throw new AuthError('Invalid token: missing or invalid user ID');
+    }
+    
+    if (!payload.tier || typeof payload.tier !== 'string') {
+      throw new AuthError('Invalid token: missing or invalid tier');
+    }
+    
     return {
       userId: payload.sub,
       tier: payload.tier,
@@ -61,6 +70,15 @@ export async function optionalAuth(request: NextRequest): Promise<AuthContext | 
 
   try {
     const payload = await verifyJwt(token);
+    
+    // Validate payload fields are present and correct type
+    if (!payload.sub || typeof payload.sub !== 'string') {
+      return null;
+    }
+    
+    if (!payload.tier || typeof payload.tier !== 'string') {
+      return null;
+    }
     
     return {
       userId: payload.sub,
