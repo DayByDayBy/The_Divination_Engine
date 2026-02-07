@@ -38,8 +38,15 @@ export const PaginatedResponseSchema = z.object({
   meta: PaginationMetaSchema,
 });
 
+// Rate limit error response (429 with specific error type)
+export const RateLimitErrorResponseSchema = ErrorResponseSchema.refine(
+  (data) => data.status === 429 && data.error === 'Too Many Requests',
+  { message: 'Rate limit response must have status 429 and error "Too Many Requests"' }
+);
+
 // Type exports
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+export type RateLimitErrorResponse = z.infer<typeof RateLimitErrorResponseSchema>;
 export type SuccessResponse = z.infer<typeof SuccessResponseSchema>;
 export type PaginationParams = z.infer<typeof PaginationParamsSchema>;
 export type PaginationMeta = z.infer<typeof PaginationMetaSchema>;
