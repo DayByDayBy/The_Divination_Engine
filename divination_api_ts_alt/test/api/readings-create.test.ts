@@ -17,7 +17,7 @@ jest.mock('@/middleware/auth', () => ({
 
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/middleware/auth';
-import { POST } from '@/app/api/reading/s/route';
+import { POST } from '@/app/api/readings/route';
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 const mockRequireAuth = requireAuth as jest.MockedFunction<typeof requireAuth>;
@@ -25,7 +25,7 @@ const mockRequireAuth = requireAuth as jest.MockedFunction<typeof requireAuth>;
 const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
 
 function createRequest(body: unknown, headers: Record<string, string> = {}): NextRequest {
-  return new NextRequest('http://localhost:3000/api/reading/s', {
+  return new NextRequest('http://localhost:3000/api/readings', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

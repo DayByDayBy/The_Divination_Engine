@@ -17,7 +17,7 @@ jest.mock('@/middleware/auth', () => ({
 
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/middleware/auth';
-import { GET } from '@/app/api/reading/s/[id]/route';
+import { GET } from '@/app/api/readings/[id]/route';
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 const mockRequireAuth = requireAuth as jest.MockedFunction<typeof requireAuth>;
@@ -26,7 +26,7 @@ const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
 const otherUserId = '660e8400-e29b-41d4-a716-446655440001';
 
 function createRequest(id: string, headers: Record<string, string> = {}): NextRequest {
-  return new NextRequest(`http://localhost:3000/api/reading/s/${id}`, {
+  return new NextRequest(`http://localhost:3000/api/readings/${id}`, {
     method: 'GET',
     headers,
   });
