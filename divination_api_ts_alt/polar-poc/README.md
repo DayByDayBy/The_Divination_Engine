@@ -18,14 +18,14 @@ This POC demonstrates:
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Set environment variables
 cp .env.example .env
 # Edit .env with your Polar sandbox credentials
 
 # Run the POC server
-npm run dev
+pnpm run dev
 ```
 
 ---
@@ -84,7 +84,7 @@ DATABASE_URL=postgresql://...
 
 ```bash
 # Run tests
-npm test
+pnpm test
 
 # Test webhook locally with Polar CLI
 polar webhooks listen --forward-to localhost:3000/api/webhook/polar
