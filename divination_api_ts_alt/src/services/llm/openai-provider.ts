@@ -39,6 +39,18 @@ export class OpenAiProvider implements LlmService {
       }
 
       const data = await response.json();
+
+      if (
+        !data ||
+        typeof data !== 'object' ||
+        !Array.isArray(data.choices) ||
+        data.choices.length === 0 ||
+        !data.choices[0]?.message ||
+        typeof data.choices[0].message.content !== 'string'
+      ) {
+        throw new LlmProviderError('OpenAI returned unexpected response shape');
+      }
+
       return data.choices[0].message.content;
     } catch (error) {
       if (error instanceof LlmRateLimitError || error instanceof LlmProviderError) {

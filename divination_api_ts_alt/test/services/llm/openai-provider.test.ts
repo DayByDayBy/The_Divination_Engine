@@ -87,4 +87,27 @@ describe('OpenAiProvider', () => {
 
     await expect(provider.generateInterpretation('test')).rejects.toThrow(LlmProviderError);
   });
+
+  it('throws LlmProviderError on malformed response shape', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ choices: [] }),
+    });
+
+    await expect(provider.generateInterpretation('test')).rejects.toThrow(
+      'OpenAI returned unexpected response shape'
+    );
+    await expect(provider.generateInterpretation('test')).rejects.toThrow(LlmProviderError);
+  });
+
+  it('throws LlmProviderError when content is null', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        choices: [{ message: { content: null } }],
+      }),
+    });
+
+    await expect(provider.generateInterpretation('test')).rejects.toThrow(LlmProviderError);
+  });
 });
