@@ -24,7 +24,7 @@ const ReadingContainer: React.FC = () => {
                 cardReadings: (cards || []).map((cardItem, index) => ({
                     card: cardItem.card,
                     reversed: cardItem.reversed,
-                    position: index + 1
+                    position: index
                 }))
             };
             await readingAPI.createReading(newReading);

@@ -57,7 +57,7 @@ export const readingAPI = {
   },
 
   getAllReadings: async (): Promise<Reading[]> => {
-    const response = await apiFetch(`/reading/s`);
+    const response = await apiFetch(`/readings`);
     if (!response.ok) {
       throw new Error('Failed to fetch readings');
     }
@@ -65,7 +65,7 @@ export const readingAPI = {
   },
 
   getReadingById: async (id: number): Promise<Reading> => {
-    const response = await apiFetch(`/reading/s/${id}`);
+    const response = await apiFetch(`/reading//s/${id}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch reading ${id}`);
     }
@@ -73,7 +73,7 @@ export const readingAPI = {
   },
 
   createReading: async (reading: Omit<Reading, 'id'>): Promise<Reading> => {
-    const response = await apiFetch(`/reading/s`, {
+    const response = await apiFetch(`/readings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ export const readingAPI = {
   },
 
   deleteReading: async (id: number): Promise<void> => {
-    const response = await apiFetch(`/reading/s/${id}`, {
+    const response = await apiFetch(`/readings/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) {
