@@ -35,6 +35,8 @@ describe('RateLimiter', () => {
       expect(result.remaining).toBe(0);
       expect(result.retryAfterSeconds).toBeGreaterThan(0);
       expect(result.retryAfterSeconds).toBeLessThanOrEqual(60);
+      expect(typeof result.resetAt).toBe('number');
+      expect(result.resetAt).toBeGreaterThan(Date.now() / 1000);
     });
 
     it('tracks limits per key independently', () => {
@@ -85,6 +87,8 @@ describe('RateLimiter', () => {
 
       const result = rateLimiter.checkLimit(key);
       expect(result.allowed).toBe(false);
+      expect(typeof result.resetAt).toBe('number');
+      expect(result.resetAt).toBeGreaterThan(Date.now() / 1000);
       expect(typeof result.retryAfterSeconds).toBe('number');
       expect(result.retryAfterSeconds).toBeGreaterThan(0);
     });
