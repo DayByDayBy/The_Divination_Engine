@@ -6,9 +6,19 @@ import { validate } from '@/lib/validation';
 import { LoginRequestSchema, AuthResponse } from '@/schemas';
 import { handleError } from '@/middleware/error-handler';
 import { AuthError } from '@/lib/errors';
+import { applyRateLimit } from '@/middleware/rate-limit-middleware';
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting (IP-based for login)
+    const rateLimitResult = applyRateLimit(request, {
+      pathname: request.nextUrl.pathname,
+    });
+    
+    if (rateLimitResult.response) {
+      return rateLimitResult.response;
+    }
+
     const body = await request.json();
     
     // Validate request body
@@ -45,7 +55,14 @@ export async function POST(request: NextRequest) {
       tier: user.tier,
     };
 
-    return NextResponse.json(response, { status: 200 });
+    const jsonResponse = NextResponse.json(response, { status: 200 });
+    
+    // Add rate limit headers
+    Object.entries(rateLimitResult.headers).forEach(([key, value]) => {
+      jsonResponse.headers.set(key, value);
+    });
+
+    return jsonResponse;
   } catch (error) {
     return handleError(error, request);
   }

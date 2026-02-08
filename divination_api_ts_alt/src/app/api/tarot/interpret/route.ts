@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { handleError } from '@/middleware/error-handler';
 import { requireAuth } from '@/middleware/auth';
+import { applyRateLimit } from '@/middleware/rate-limit-middleware';
 import { InterpretRequestSchema, InterpretResponseSchema } from '@/schemas';
 import { ValidationError } from '@/lib/errors';
 import { buildPrompt } from '@/services/llm/prompt-builder';
@@ -19,6 +20,17 @@ function getLlmService() {
 export async function POST(request: NextRequest) {
   try {
     const auth = await requireAuth(request);
+    
+    // Apply rate limiting
+    const rateLimitResult = applyRateLimit(request, {
+      pathname: request.nextUrl.pathname,
+      auth,
+    });
+    
+    if (rateLimitResult.response) {
+      return rateLimitResult.response;
+    }
+
     const body = await request.json();
 
     const parseResult = InterpretRequestSchema.safeParse(body);
@@ -32,6 +44,37 @@ export async function POST(request: NextRequest) {
 
     const llmService = getLlmService();
     const interpretation = await llmService.generateInterpretation(prompt);
+
+    // Verify reading ownership before updating
+    const reading = await prisma.reading.findUnique({
+      where: { id: readingId },
+    });
+
+    if (!reading) {
+      return NextResponse.json(
+        {
+          timestamp: new Date().toISOString(),
+          status: 404,
+          error: 'Not Found',
+          message: 'Reading not found',
+          path: request.nextUrl.pathname,
+        },
+        { status: 404 }
+      );
+    }
+
+    if (reading.userId !== auth.userId) {
+      return NextResponse.json(
+        {
+          timestamp: new Date().toISOString(),
+          status: 403,
+          error: 'Forbidden',
+          message: 'Access denied to reading',
+          path: request.nextUrl.pathname,
+        },
+        { status: 403 }
+      );
+    }
 
     await prisma.reading.update({
       where: { id: readingId },
@@ -48,7 +91,14 @@ export async function POST(request: NextRequest) {
 
     const validatedResponse = InterpretResponseSchema.parse(responseData);
 
-    return NextResponse.json(validatedResponse, { status: 200 });
+    const response = NextResponse.json(validatedResponse, { status: 200 });
+    
+    // Add rate limit headers
+    Object.entries(rateLimitResult.headers).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
+
+    return response;
   } catch (error) {
     if (error instanceof LlmTimeoutError) {
       return NextResponse.json(

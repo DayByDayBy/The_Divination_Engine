@@ -18,6 +18,33 @@ export function handleError(error: unknown, request: NextRequest): NextResponse 
     return NextResponse.json(errorResponse, { status: error.statusCode });
   }
 
+  // Handle JWT errors specifically first (before Prisma errors)
+  if (error && typeof error === 'object' && 'code' in error) {
+    const jwtError = error as { code: string };
+    
+    if (jwtError.code === 'ERR_JWT_EXPIRED') {
+      const expiredError: ErrorResponse = {
+        timestamp: new Date().toISOString(),
+        status: 401,
+        error: 'Unauthorized',
+        message: 'Token has expired',
+        path: request.nextUrl.pathname,
+      };
+      return NextResponse.json(expiredError, { status: 401 });
+    }
+
+    if (jwtError.code === 'ERR_JWT_INVALID' || jwtError.code === 'ERR_JWS_SIGNATURE_VERIFICATION_FAILED') {
+      const invalidError: ErrorResponse = {
+        timestamp: new Date().toISOString(),
+        status: 401,
+        error: 'Unauthorized',
+        message: 'Invalid token',
+        path: request.nextUrl.pathname,
+      };
+      return NextResponse.json(invalidError, { status: 401 });
+    }
+  }
+
   // Handle Prisma errors
   if (error && typeof error === 'object' && 'code' in error) {
     const prismaError = error as { code: string; meta?: any };
@@ -57,33 +84,6 @@ export function handleError(error: unknown, request: NextRequest): NextResponse 
           path: request.nextUrl.pathname,
         };
         return NextResponse.json(dbError, { status: 500 });
-    }
-  }
-
-  // Handle JWT errors specifically
-  if (error && typeof error === 'object' && 'code' in error) {
-    const jwtError = error as { code: string };
-    
-    if (jwtError.code === 'ERR_JWT_EXPIRED') {
-      const expiredError: ErrorResponse = {
-        timestamp: new Date().toISOString(),
-        status: 401,
-        error: 'Unauthorized',
-        message: 'Token has expired',
-        path: request.nextUrl.pathname,
-      };
-      return NextResponse.json(expiredError, { status: 401 });
-    }
-
-    if (jwtError.code === 'ERR_JWT_INVALID' || jwtError.code === 'ERR_JWT_SIGNATURE_VERIFICATION_FAILED') {
-      const invalidError: ErrorResponse = {
-        timestamp: new Date().toISOString(),
-        status: 401,
-        error: 'Unauthorized',
-        message: 'Invalid token',
-        path: request.nextUrl.pathname,
-      };
-      return NextResponse.json(invalidError, { status: 401 });
     }
   }
 

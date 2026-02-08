@@ -23,12 +23,28 @@ export const CreateReadingRequestSchema = z.object({
   cardReadings: z.array(
     z.object({
       card: z.object({
-        id: z.number().int().positive(),
+        id: z.number().int().positive().min(1).max(78), // Constrain to valid card IDs
       }),
       position: z.number().int().min(0).max(77),
       reversed: z.boolean(),
     })
   ).min(1).max(78), // At least 1 card, max 78 cards
+}).refine((data) => {
+  // Validate positions are sequential starting at 0
+  const positions = data.cardReadings.map(cr => cr.position).sort((a, b) => a - b);
+  const expectedPositions = Array.from({ length: positions.length }, (_, i) => i);
+  
+  return positions.length === expectedPositions.length && 
+         positions.every((pos, index) => pos === expectedPositions[index]);
+}, {
+  message: "Positions must be sequential integers starting at 0 (0, 1, 2, ...)",
+}).refine((data) => {
+  // Validate no duplicate card IDs
+  const cardIds = data.cardReadings.map(cr => cr.card.id);
+  const uniqueCardIds = new Set(cardIds);
+  return cardIds.length === uniqueCardIds.size;
+}, {
+  message: "Duplicate card IDs are not allowed within the same reading",
 });
 
 export const GetReadingByIdRequestSchema = z.object({

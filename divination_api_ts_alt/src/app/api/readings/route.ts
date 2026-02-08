@@ -2,18 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { handleError } from '@/middleware/error-handler';
 import { requireAuth } from '@/middleware/auth';
+import { applyRateLimit } from '@/middleware/rate-limit-middleware';
 import { GetAllReadingsResponseSchema, CreateReadingRequestSchema, CreateReadingResponseSchema } from '@/schemas';
 import { ValidationError } from '@/lib/errors';
 
 export async function POST(request: NextRequest) {
   try {
     const auth = await requireAuth(request);
+    
+    // Apply rate limiting
+    const rateLimitResult = applyRateLimit(request, {
+      pathname: request.nextUrl.pathname,
+      auth,
+    });
+    
+    if (rateLimitResult.response) {
+      return rateLimitResult.response;
+    }
+
     const body = await request.json();
 
     // Validate request body
     const parseResult = CreateReadingRequestSchema.safeParse(body);
     if (!parseResult.success) {
-      throw new ValidationError('Invalid reading request');
+      const errorMessages = parseResult.error.errors.map(err => err.message).join(', ');
+      throw new ValidationError(errorMessages);
     }
 
     const { cardReadings } = parseResult.data;
@@ -40,7 +53,14 @@ export async function POST(request: NextRequest) {
 
     const validatedReading = CreateReadingResponseSchema.parse(reading);
 
-    return NextResponse.json(validatedReading, { status: 201 });
+    const response = NextResponse.json(validatedReading, { status: 201 });
+    
+    // Add rate limit headers
+    Object.entries(rateLimitResult.headers).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
+
+    return response;
   } catch (error) {
     return handleError(error, request);
   }
@@ -49,6 +69,16 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const auth = await requireAuth(request);
+    
+    // Apply rate limiting
+    const rateLimitResult = applyRateLimit(request, {
+      pathname: request.nextUrl.pathname,
+      auth,
+    });
+    
+    if (rateLimitResult.response) {
+      return rateLimitResult.response;
+    }
 
     const readings = await prisma.reading.findMany({
       where: { userId: auth.userId },
@@ -64,7 +94,14 @@ export async function GET(request: NextRequest) {
 
     const validatedReadings = GetAllReadingsResponseSchema.parse(readings);
 
-    return NextResponse.json(validatedReadings, { status: 200 });
+    const response = NextResponse.json(validatedReadings, { status: 200 });
+    
+    // Add rate limit headers
+    Object.entries(rateLimitResult.headers).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
+
+    return response;
   } catch (error) {
     return handleError(error, request);
   }

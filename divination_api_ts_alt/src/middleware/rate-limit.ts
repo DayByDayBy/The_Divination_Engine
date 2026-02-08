@@ -7,6 +7,7 @@ export interface RateLimitResult {
   allowed: boolean;
   remaining: number;
   retryAfterSeconds?: number;
+  resetAt: number; // Unix timestamp in seconds
 }
 
 interface RateLimitEntry {
@@ -35,11 +36,16 @@ export class RateLimiter {
     // If no entry or window expired, start fresh
     if (!entry || now - entry.windowStart >= this.windowMs) {
       this.store.set(key, { count: 1, windowStart: now });
+      const resetAt = Math.ceil((now + this.windowMs) / 1000);
       return {
         allowed: true,
         remaining: this.requestsPerMinute - 1,
+        resetAt,
       };
     }
+
+    const windowEnd = entry.windowStart + this.windowMs;
+    const resetAt = Math.ceil(windowEnd / 1000);
 
     // Window still active
     if (entry.count < this.requestsPerMinute) {
@@ -47,11 +53,11 @@ export class RateLimiter {
       return {
         allowed: true,
         remaining: this.requestsPerMinute - entry.count,
+        resetAt,
       };
     }
 
     // Limit exceeded
-    const windowEnd = entry.windowStart + this.windowMs;
     const retryAfterMs = windowEnd - now;
     const retryAfterSeconds = Math.ceil(retryAfterMs / 1000);
 
@@ -59,6 +65,7 @@ export class RateLimiter {
       allowed: false,
       remaining: 0,
       retryAfterSeconds,
+      resetAt,
     };
   }
 
