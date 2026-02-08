@@ -26,8 +26,8 @@ jest.mock('@/middleware/auth', () => ({
 
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/middleware/auth';
-import { GET as listReadings, POST as createReading } from '@/app/api/reading/s/route';
-import { GET as getReading, DELETE as deleteReading } from '@/app/api/reading/s/[id]/route';
+import { GET as listReadings, POST as createReading } from '@/app/api/readings/route';
+import { GET as getReading, DELETE as deleteReading } from '@/app/api/readings/[id]/route';
 
 const mockPrisma = prisma as jest.Mocked<typeof prisma>;
 const mockRequireAuth = requireAuth as jest.MockedFunction<typeof requireAuth>;
@@ -53,7 +53,7 @@ describe('Readings Contract Tests', () => {
       }));
       (mockPrisma.reading.findMany as jest.Mock).mockResolvedValue(goldenBody);
 
-      const request = new NextRequest('http://localhost:3000/api/reading/s', {
+      const request = new NextRequest('http://localhost:3000/api/readings', {
         method: 'GET',
         headers: { Authorization: 'Bearer valid-token' },
       });
@@ -71,7 +71,7 @@ describe('Readings Contract Tests', () => {
         new AuthError('Full authentication is required to access this resource')
       );
 
-      const request = new NextRequest('http://localhost:3000/api/reading/s', { method: 'GET' });
+      const request = new NextRequest('http://localhost:3000/api/readings', { method: 'GET' });
       const response = await listReadings(request);
       const body = await response.json();
 
@@ -83,7 +83,7 @@ describe('Readings Contract Tests', () => {
     });
   });
 
-  describe('GET /api/reading/s/{id} - Get Reading', () => {
+  describe('GET /api/readings/{id} - Get Reading', () => {
     it('response format matches golden fixture', async () => {
       const goldenBody = {
         ...fixtures.getReadingById.response.body,
@@ -92,7 +92,7 @@ describe('Readings Contract Tests', () => {
       };
       (mockPrisma.reading.findUnique as jest.Mock).mockResolvedValue(goldenBody);
 
-      const request = new NextRequest('http://localhost:3000/api/reading/s/1', {
+      const request = new NextRequest('http://localhost:3000/api/readings/1', {
         method: 'GET',
         headers: { Authorization: 'Bearer valid-token' },
       });
@@ -106,7 +106,7 @@ describe('Readings Contract Tests', () => {
     it('404 error format matches golden fixture', async () => {
       (mockPrisma.reading.findUnique as jest.Mock).mockResolvedValue(null);
 
-      const request = new NextRequest('http://localhost:3000/api/reading/s/999', {
+      const request = new NextRequest('http://localhost:3000/api/readings/999', {
         method: 'GET',
         headers: { Authorization: 'Bearer valid-token' },
       });
@@ -130,7 +130,7 @@ describe('Readings Contract Tests', () => {
         cardReadings: [],
       });
 
-      const request = new NextRequest('http://localhost:3000/api/reading/s/1', {
+      const request = new NextRequest('http://localhost:3000/api/readings/1', {
         method: 'GET',
         headers: { Authorization: 'Bearer valid-token' },
       });
@@ -145,7 +145,7 @@ describe('Readings Contract Tests', () => {
     });
   });
 
-  describe('POST /api/reading/s - Create Reading', () => {
+  describe('POST /api/readings - Create Reading', () => {
     it('response format matches golden fixture', async () => {
       const goldenBody = {
         ...fixtures.createReading.response.body,
@@ -154,7 +154,7 @@ describe('Readings Contract Tests', () => {
       };
       (mockPrisma.reading.create as jest.Mock).mockResolvedValue(goldenBody);
 
-      const request = new NextRequest('http://localhost:3000/api/reading/s', {
+      const request = new NextRequest('http://localhost:3000/api/readings', {
         method: 'POST',
         headers: {
           Authorization: 'Bearer valid-token',
@@ -178,7 +178,7 @@ describe('Readings Contract Tests', () => {
       });
       (mockPrisma.reading.delete as jest.Mock).mockResolvedValue({});
 
-      const request = new NextRequest('http://localhost:3000/api/reading/s/1', {
+      const request = new NextRequest('http://localhost:3000/api/readings/1', {
         method: 'DELETE',
         headers: { Authorization: 'Bearer valid-token' },
       });
@@ -190,7 +190,7 @@ describe('Readings Contract Tests', () => {
     it('404 error format matches golden fixture', async () => {
       (mockPrisma.reading.findUnique as jest.Mock).mockResolvedValue(null);
 
-      const request = new NextRequest('http://localhost:3000/api/reading/s/999', {
+      const request = new NextRequest('http://localhost:3000/api/readings/999', {
         method: 'DELETE',
         headers: { Authorization: 'Bearer valid-token' },
       });
