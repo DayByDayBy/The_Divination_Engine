@@ -150,43 +150,58 @@ Returns N random cards for a reading.
 
 ---
 
-#### GET /api/reading/s
-Returns all readings for the authenticated user.
+#### GET /api/readings
+Returns all readings for the authenticated user (paginated).
 
 | Property | Value |
 |----------|-------|
 | Auth | Required |
 | Rate Limit | 60/min/user |
 
+**Query Parameters:**
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `page` | number | 1 | Page number (1-indexed) |
+| `pageSize` | number | 20 | Items per page (max 100) |
+
 **Response (200):**
 ```json
-[
-  {
-    "id": 1,
-    "userId": "550e8400-e29b-41d4-a716-446655440000",
-    "llmInterpretation": null,
-    "createdAt": "2026-01-30T19:00:00",
-    "cardReadings": [
-      {
-        "id": 1,
-        "card": {
+{
+  "data": [
+    {
+      "id": 1,
+      "userId": "550e8400-e29b-41d4-a716-446655440000",
+      "llmInterpretation": null,
+      "createdAt": "2026-01-30T19:00:00",
+      "cardReadings": [
+        {
           "id": 1,
-          "type": "MAJOR",
-          "suit": null,
-          "nameShort": "ar00",
-          "name": "The Fool",
-          "value": "0",
-          "intValue": 0,
-          "meaningUp": "...",
-          "meaningRev": "...",
-          "description": "..."
-        },
-        "position": 0,
-        "reversed": false
-      }
-    ]
+          "card": {
+            "id": 1,
+            "type": "MAJOR",
+            "suit": null,
+            "nameShort": "ar00",
+            "name": "The Fool",
+            "value": "0",
+            "intValue": 0,
+            "meaningUp": "...",
+            "meaningRev": "...",
+            "description": "..."
+          },
+          "position": 0,
+          "reversed": false
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "pageSize": 20,
+    "totalCount": 42,
+    "totalPages": 3
   }
-]
+}
 ```
 
 **Response (401):**
@@ -196,32 +211,14 @@ Returns all readings for the authenticated user.
   "status": 401,
   "error": "Unauthorized",
   "message": "Full authentication is required to access this resource",
-  "path": "/api/reading/s"
-}
-```
-
-**Query Parameters:**
-
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| `page` | number | 0 | Page number (0-indexed) |
-| `size` | number | 20 | Items per page (max 100) |
-| `sort` | string | "createdAt,desc" | Sort field and direction |
-
-**Response (200) - Paginated:**
-```json
-{
-  "content": [...],
-  "page": 0,
-  "size": 20,
-  "totalElements": 42,
-  "totalPages": 3
+  "path": "/api/readings"
 }
 ```
 
 **Notes:**
 - Returns only readings belonging to the authenticated user (filter by userId from JWT)
-- Size is capped at 100; values >100 are reduced to 100
+- Page size is capped at 100; values >100 are reduced to 100
+- Sorted by `createdAt` descending (newest first)
 
 ---
 
