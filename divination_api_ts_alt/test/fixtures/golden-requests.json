@@ -100,7 +100,7 @@
       "getAllReadings": {
         "request": {
           "method": "GET",
-          "path": "/api/reading/s",
+          "path": "/api/readings",
           "headers": {
             "Authorization": "Bearer <jwt>"
           },
@@ -151,7 +151,7 @@
       "getReadingById": {
         "request": {
           "method": "GET",
-          "path": "/api/reading/s/{id}",
+          "path": "/api/reading//s/{id}",
           "pathParams": { "id": "number" },
           "headers": {
             "Authorization": "Bearer <jwt>"
@@ -175,21 +175,21 @@
             "status": 404,
             "error": "Not Found",
             "message": "Reading not found with id : '999'",
-            "path": "/api/reading/s/999"
+            "path": "/api/readings/999"
           },
           "403": {
             "timestamp": "2026-01-30T19:00:00.000Z",
             "status": 403,
             "error": "Forbidden",
             "message": "Access denied to reading",
-            "path": "/api/reading/s/1"
+            "path": "/api/readings/1"
           }
         }
       },
       "createReading": {
         "request": {
           "method": "POST",
-          "path": "/api/reading/s",
+          "path": "/api/readings",
           "headers": {
             "Authorization": "Bearer <jwt>",
             "Content-Type": "application/json"
@@ -230,7 +230,7 @@
       "deleteReading": {
         "request": {
           "method": "DELETE",
-          "path": "/api/reading/s/{id}",
+          "path": "/api/reading//s/{id}",
           "pathParams": { "id": "number" },
           "headers": {
             "Authorization": "Bearer <jwt>"
@@ -247,7 +247,7 @@
             "status": 404,
             "error": "Not Found",
             "message": "Reading not found with id : '999'",
-            "path": "/api/reading/s/999"
+            "path": "/api/readings/999"
           }
         }
       }
