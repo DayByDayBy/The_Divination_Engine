@@ -61,11 +61,12 @@ export const readingAPI = {
     if (!response.ok) {
       throw new Error('Failed to fetch readings');
     }
-    return response.json();
+    const result = await response.json();
+    return result.data;
   },
 
   getReadingById: async (id: number): Promise<Reading> => {
-    const response = await apiFetch(`/reading//s/${id}`);
+    const response = await apiFetch(`/readings/${id}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch reading ${id}`);
     }

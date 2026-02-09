@@ -109,34 +109,42 @@
         "response": {
           "status": 200,
           "contentType": "application/json",
-          "body": [
-            {
-              "id": 1,
-              "userId": "550e8400-e29b-41d4-a716-446655440000",
-              "llmInterpretation": null,
-              "createdAt": "2026-01-30T19:00:00",
-              "cardReadings": [
-                {
-                  "id": 1,
-                  "card": {
+          "body": {
+            "data": [
+              {
+                "id": 1,
+                "userId": "550e8400-e29b-41d4-a716-446655440000",
+                "llmInterpretation": null,
+                "createdAt": "2026-01-30T19:00:00",
+                "cardReadings": [
+                  {
                     "id": 1,
-                    "type": "MAJOR",
-                    "suit": null,
-                    "nameShort": "ar00",
-                    "name": "The Fool",
-                    "value": "0",
-                    "intValue": 0,
-                    "meaningUp": "...",
-                    "meaningRev": "...",
-                    "description": "..."
-                  },
-                  "position": 0,
-                  "reversed": false
-                }
-              ]
+                    "card": {
+                      "id": 1,
+                      "type": "MAJOR",
+                      "suit": null,
+                      "nameShort": "ar00",
+                      "name": "The Fool",
+                      "value": "0",
+                      "intValue": 0,
+                      "meaningUp": "...",
+                      "meaningRev": "...",
+                      "description": "..."
+                    },
+                    "position": 0,
+                    "reversed": false
+                  }
+                ]
+              }
+            ],
+            "meta": {
+              "page": 1,
+              "pageSize": 20,
+              "totalCount": 1,
+              "totalPages": 1
             }
-          ],
-          "notes": "Returns only readings belonging to authenticated user"
+          },
+          "notes": "Returns array of only readings belonging to authenticated user with pagination metadata"
         },
         "errorResponses": {
           "401": {
@@ -174,7 +182,7 @@
             "timestamp": "2026-01-30T19:00:00.000Z",
             "status": 404,
             "error": "Not Found",
-            "message": "Reading not found with id : '999'",
+            "message": "Reading not found with id: '999'",
             "path": "/api/readings/999"
           },
           "403": {
@@ -246,7 +254,7 @@
             "timestamp": "2026-01-30T19:00:00.000Z",
             "status": 404,
             "error": "Not Found",
-            "message": "Reading not found with id : '999'",
+            "message": "Reading not found with id: '999'",
             "path": "/api/readings/999"
           }
         }

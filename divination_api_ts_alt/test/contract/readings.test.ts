@@ -15,6 +15,7 @@ jest.mock('@/lib/db', () => ({
       findUnique: jest.fn(),
       create: jest.fn(),
       delete: jest.fn(),
+      count: jest.fn(),
     },
   },
 }));
@@ -51,6 +52,7 @@ describe('Readings Contract Tests', () => {
         ...r,
         createdAt: isoTimestamp,
       }));
+      (mockPrisma.reading.count as jest.Mock).mockResolvedValue(goldenBody.length);
       (mockPrisma.reading.findMany as jest.Mock).mockResolvedValue(goldenBody);
 
       const request = new NextRequest('http://localhost:3000/api/readings', {
@@ -61,7 +63,9 @@ describe('Readings Contract Tests', () => {
       const body = await response.json();
 
       expect(response.status).toBe(fixtures.getAllReadings.response.status);
-      expect(Array.isArray(body)).toBe(true);
+      // We expect the data to match the golden fixture body (which is an array)
+      expect(body.data.length).toBe(goldenBody.length);
+      expect(body.meta).toBeDefined();
       expect(() => GetAllReadingsResponseSchema.parse(body)).not.toThrow();
     });
 

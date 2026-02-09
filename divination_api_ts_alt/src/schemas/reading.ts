@@ -52,7 +52,15 @@ export const GetReadingByIdRequestSchema = z.object({
 });
 
 // Response schemas
-export const GetAllReadingsResponseSchema = z.array(ReadingSchema);
+export const GetAllReadingsResponseSchema = z.object({
+  data: z.array(ReadingSchema),
+  meta: z.object({
+    page: z.number(),
+    pageSize: z.number(),
+    totalCount: z.number(),
+    totalPages: z.number(),
+  }),
+});
 export const GetReadingByIdResponseSchema = ReadingSchema;
 export const CreateReadingResponseSchema = ReadingSchema;
 

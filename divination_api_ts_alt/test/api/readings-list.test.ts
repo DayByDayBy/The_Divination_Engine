@@ -6,6 +6,7 @@ jest.mock('@/lib/db', () => ({
   prisma: {
     reading: {
       findMany: jest.fn(),
+      count: jest.fn(),
     },
   },
 }));
@@ -68,32 +69,47 @@ describe('GET /api/reading/s', () => {
   it('returns readings for authenticated user', async () => {
     mockRequireAuth.mockResolvedValue({ userId: mockUserId, tier: 'FREE' });
     (mockPrisma.reading.findMany as jest.Mock).mockResolvedValue(mockReadings);
+    (mockPrisma.reading.count as jest.Mock).mockResolvedValue(mockReadings.length);
 
     const request = createRequest({ Authorization: 'Bearer valid-token' });
     const response = await GET(request);
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(Array.isArray(body)).toBe(true);
+    expect(Array.isArray(body.data)).toBe(true);
+    expect(body.data).toHaveLength(mockReadings.length);
+    expect(body.meta).toEqual({
+      page: 1,
+      pageSize: 20,
+      totalCount: mockReadings.length,
+      totalPages: 1,
+    });
     expect(() => GetAllReadingsResponseSchema.parse(body)).not.toThrow();
     // Verify only user's readings are queried
     expect(mockPrisma.reading.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { userId: mockUserId },
+        skip: 0,
+        take: 20,
       })
     );
+    expect(mockPrisma.reading.count).toHaveBeenCalledWith({
+      where: { userId: mockUserId },
+    });
   });
 
   it('returns empty array when user has no readings', async () => {
     mockRequireAuth.mockResolvedValue({ userId: mockUserId, tier: 'FREE' });
     (mockPrisma.reading.findMany as jest.Mock).mockResolvedValue([]);
+    (mockPrisma.reading.count as jest.Mock).mockResolvedValue(0);
 
     const request = createRequest({ Authorization: 'Bearer valid-token' });
     const response = await GET(request);
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body).toEqual([]);
+    expect(body.data).toEqual([]);
+    expect(body.meta.totalCount).toBe(0);
   });
 
   it('returns 401 when no JWT provided', async () => {
