@@ -83,7 +83,7 @@ describe('GET /api/reading/s/[id]', () => {
     expect(response.status).toBe(404);
     expect(() => ErrorResponseSchema.parse(body)).not.toThrow();
     expect(body.error).toBe('Not Found');
-    expect(body.message).toContain("Reading not found with id : '999'");
+    expect(body.message).toContain("Reading not found with id: '999'");
   });
 
   it('returns 401 when no JWT provided', async () => {

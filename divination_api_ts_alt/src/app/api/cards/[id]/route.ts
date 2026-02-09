@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         timestamp: new Date().toISOString(),
         status: 404,
         error: 'Not Found',
-        message: `Card not found with id : '${cardId}'`,
+        message: `Card not found with id: '${cardId}'`,
         path: request.nextUrl.pathname,
       };
       return NextResponse.json(errorResponse, { status: 404 });

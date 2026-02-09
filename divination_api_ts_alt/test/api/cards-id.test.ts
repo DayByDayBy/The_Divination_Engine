@@ -62,7 +62,7 @@ describe('GET /api/cards/[id]', () => {
     expect(response.status).toBe(404);
     expect(() => ErrorResponseSchema.parse(body)).not.toThrow();
     expect(body.error).toBe('Not Found');
-    expect(body.message).toContain("Card not found with id : '999'");
+    expect(body.message).toContain("Card not found with id: '999'");
   });
 
   it('returns 400 for invalid ID (non-numeric)', async () => {
