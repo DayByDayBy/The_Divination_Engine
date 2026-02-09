@@ -80,21 +80,41 @@ export async function GET(request: NextRequest) {
       return rateLimitResult.response;
     }
 
-    const readings = await prisma.reading.findMany({
-      where: { userId: auth.userId },
-      include: {
-        cardReadings: {
-          include: {
-            card: true,
+    const searchParams = request.nextUrl.searchParams;
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get('pageSize') || '20')));
+    const skip = (page - 1) * pageSize;
+
+    const [totalCount, readings] = await Promise.all([
+      prisma.reading.count({
+        where: { userId: auth.userId },
+      }),
+      prisma.reading.findMany({
+        where: { userId: auth.userId },
+        include: {
+          cardReadings: {
+            include: {
+              card: true,
+            },
           },
         },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+    ]);
+
+    const validatedResponse = GetAllReadingsResponseSchema.parse({
+      data: readings,
+      meta: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
       },
-      orderBy: { createdAt: 'desc' },
     });
 
-    const validatedReadings = GetAllReadingsResponseSchema.parse(readings);
-
-    const response = NextResponse.json(validatedReadings, { status: 200 });
+    const response = NextResponse.json(validatedResponse, { status: 200 });
     
     // Add rate limit headers
     Object.entries(rateLimitResult.headers).forEach(([key, value]) => {

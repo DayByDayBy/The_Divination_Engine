@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         timestamp: new Date().toISOString(),
         status: 404,
         error: 'Not Found',
-        message: `Reading not found with id : '${readingId}'`,
+        message: `Reading not found with id: '${readingId}'`,
         path: request.nextUrl.pathname,
       };
       return NextResponse.json(errorResponse, { status: 404 });
@@ -80,7 +80,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         timestamp: new Date().toISOString(),
         status: 404,
         error: 'Not Found',
-        message: `Reading not found with id : '${readingId}'`,
+        message: `Reading not found with id: '${readingId}'`,
         path: request.nextUrl.pathname,
       };
       return NextResponse.json(errorResponse, { status: 404 });
