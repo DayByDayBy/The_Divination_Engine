@@ -48,12 +48,15 @@ describe('Readings Contract Tests', () => {
 
   describe('GET /api/reading/s - List Readings', () => {
     it('response format matches golden fixture', async () => {
-      const goldenBody = fixtures.getAllReadings.response.body.map((r: any) => ({
+      // fixtures.getAllReadings.response.body is now { data: [...], meta: {...} }
+      // We need to map the data array to update timestamps
+      const goldenData = fixtures.getAllReadings.response.body.data.map((r: any) => ({
         ...r,
         createdAt: isoTimestamp,
       }));
-      (mockPrisma.reading.count as jest.Mock).mockResolvedValue(goldenBody.length);
-      (mockPrisma.reading.findMany as jest.Mock).mockResolvedValue(goldenBody);
+      
+      (mockPrisma.reading.count as jest.Mock).mockResolvedValue(goldenData.length);
+      (mockPrisma.reading.findMany as jest.Mock).mockResolvedValue(goldenData);
 
       const request = new NextRequest('http://localhost:3000/api/readings', {
         method: 'GET',
@@ -63,8 +66,8 @@ describe('Readings Contract Tests', () => {
       const body = await response.json();
 
       expect(response.status).toBe(fixtures.getAllReadings.response.status);
-      // We expect the data to match the golden fixture body (which is an array)
-      expect(body.data.length).toBe(goldenBody.length);
+      // We expect the data to match the golden fixture body data
+      expect(body.data.length).toBe(goldenData.length);
       expect(body.meta).toBeDefined();
       expect(() => GetAllReadingsResponseSchema.parse(body)).not.toThrow();
     });
