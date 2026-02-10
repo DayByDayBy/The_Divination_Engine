@@ -3,6 +3,7 @@
 # ============================================
 .env
 .env.*
+.env.local
 !.env.example
 !.env.production.example
 
@@ -92,8 +93,4 @@ Thumbs.db
 prompts/
 
 reviews/
-
-
-.env.local
-
 .windsurf/
