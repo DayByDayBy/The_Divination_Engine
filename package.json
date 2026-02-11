@@ -1,5 +1,12 @@
 {
+	"scripts": {
+		"dev": "concurrently -n api,app -c blue,green \"pnpm --dir divination_api dev\" \"pnpm --dir divination_engine dev\"",
+		"dev:api": "pnpm --dir divination_api dev",
+		"dev:app": "pnpm --dir divination_engine dev",
+		"install:all": "pnpm --dir divination_api install && pnpm --dir divination_engine install"
+	},
 	"devDependencies": {
-		"@types/node": "^25.2.0"
+		"@types/node": "^25.2.0",
+		"concurrently": "^9.1.2"
 	}
 }
