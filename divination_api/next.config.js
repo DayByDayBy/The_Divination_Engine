@@ -4,10 +4,6 @@ const nextConfig = {
   output: 'standalone',
   
   // API routes only - no pages
-  experimental: {
-    // Required for Cloudflare Pages
-    runtime: 'nodejs',
-  },
   
   // Disable image optimization (not needed for API)
   images: {
