@@ -47,8 +47,7 @@ export function handleError(error: unknown, request: NextRequest): NextResponse 
 
   // Handle Prisma errors
   if (error && typeof error === 'object' && 'code' in error) {
-    const prismaError = error as { code: string; meta?: any; message?: string };
-    console.error('Prisma error details:', { code: prismaError.code, meta: prismaError.meta, message: prismaError.message });
+    const prismaError = error as { code: string; meta?: any };
     
     switch (prismaError.code) {
       case 'P2002':
