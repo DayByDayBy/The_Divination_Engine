@@ -15,7 +15,7 @@ if (process.env.NODE_ENV !== 'production') {
 export async function testDatabaseConnection(): Promise<boolean> {
   try {
     await prisma.$queryRaw`SELECT 1`
-    console.log('✅ Database connection successful')
+    console.log('Database connection successful')
     return true
   } catch (error) {
     console.error('❌ Database connection failed:', error)
