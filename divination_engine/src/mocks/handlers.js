@@ -75,12 +75,12 @@ export const handlers = [
   }),
 
   // Get all readings
-  http.get('/api/reading/s', () => {
+  http.get('/api/readings', () => {
     return HttpResponse.json(mockReadings);
   }),
 
   // Get reading by ID
-  http.get('/api/reading/s/:id', ({ params }) => {
+  http.get('/api/readings/:id', ({ params }) => {
     const reading = mockReadings.find(r => r.id === parseInt(params.id));
     if (reading) {
       return HttpResponse.json(reading);
@@ -89,7 +89,7 @@ export const handlers = [
   }),
 
   // Create new reading
-  http.post('/api/reading/s', async ({ request }) => {
+  http.post('/api/readings', async ({ request }) => {
     const newReading = await request.json();
     const reading = {
       id: mockReadings.length + 1,
@@ -100,7 +100,7 @@ export const handlers = [
   }),
 
   // Delete reading
-  http.delete('/api/reading/s/:id', ({ params }) => {
+  http.delete('/api/readings/:id', ({ params }) => {
     const index = mockReadings.findIndex(r => r.id === parseInt(params.id));
     if (index !== -1) {
       mockReadings.splice(index, 1);

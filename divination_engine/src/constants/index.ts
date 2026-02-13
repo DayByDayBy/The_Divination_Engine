@@ -39,8 +39,8 @@ export const ROUTES = {
 export const API_ENDPOINTS = {
   CARDS: '/api/cards',
   CARDS_RANDOM: (count: number) => `/api/reading/${count}`,
-  READINGS: '/api/reading/s',
-  READING_BY_ID: (id: number) => `/api/reading/s/${id}`
+  READINGS: '/api/readings',
+  READING_BY_ID: (id: number) => `/api/readings/${id}`
 };
 
 export const ERROR_MESSAGES = {
