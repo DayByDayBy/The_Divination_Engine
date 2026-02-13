@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const CardTypeSchema = z.enum(['MAJOR', 'MINOR']);
 
 // Suit enum (null for Major Arcana)
-export const SuitSchema = z.enum(['WANDS', 'CUPS', 'SWORDS', 'PENTACLES']).nullable();
+export const SuitSchema = z.string().nullable();
 
 // Full card schema
 export const CardSchema = z.object({
@@ -17,7 +17,7 @@ export const CardSchema = z.object({
   intValue: z.number(),
   meaningUp: z.string(),
   meaningRev: z.string(),
-  description: z.string(),
+  description: z.string().nullable(),
 });
 
 // Response schemas
