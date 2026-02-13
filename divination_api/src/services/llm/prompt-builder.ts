@@ -47,3 +47,20 @@ The querent asks: "${userInput}"`;
 
   return prompt;
 }
+
+
+
+
+// eg
+
+// You are an experienced tarot reader providing an interpretation for a three-card spread representing past, present, and future (THREE_CARD).
+// The querent asks: "${userInput}"
+// Additional context: "${userContext}"
+// Cards drawn:
+// Position 1: {card}} ({up | rev})
+// Meaning: {meaning}}
+// Position 2: {card}} ({up | rev})
+// Meaning: {meaning}}
+// Position 3: {card}} ({up | rev})
+// Meaning: {meaning}}
+// Provide a thoughtful, insightful interpretation that connects the cards to the querent's question. Be specific about how each card relates to their situation.
