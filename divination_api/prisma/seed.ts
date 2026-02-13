@@ -41,7 +41,7 @@ async function main() {
   }));
 
   const result = await prisma.card.createMany({ data: cards });
-  console.log(`✅ Seeded ${result.count} cards into the database.`);
+  console.log(`Seeded ${result.count} cards into the database.`);
 }
 
 main()
