@@ -62,8 +62,9 @@ model User {
   id           String    @id @default(uuid()) @db.Uuid
   email        String    @unique
   passwordHash String    @map("password_hash")
-  tier         UserTier  @default(FREE)
-  createdAt    DateTime  @default(now()) @map("created_at")
+  tier             UserTier  @default(FREE)
+  polarCustomerId  String?   @map("polar_customer_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
 
   // Relations
   readings Reading[]
