@@ -5,16 +5,19 @@ import ArchiveContainer from "./containers/ArchiveContainer";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import MainContainer from "./containers/MainContainer";
+import { AuthProvider } from "./context/AuthContext";
 
 const App: React.FC = () => {
   return (
     <Router>
-      <NavBar />
-      <Routes>
-        <Route path="/" element={<MainContainer />} />
-        <Route path="/reading" element={<ReadingContainer />} />
-        <Route path="/archive/*" element={< ArchiveContainer />} />
-      </Routes>
+      <AuthProvider>
+        <NavBar />
+        <Routes>
+          <Route path="/" element={<MainContainer />} />
+          <Route path="/reading" element={<ReadingContainer />} />
+          <Route path="/archive/*" element={< ArchiveContainer />} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }
