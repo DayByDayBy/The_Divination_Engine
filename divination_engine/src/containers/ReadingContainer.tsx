@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Spread from "../components/Spread";
 import Reading from "../components/Reading";
 import { readingAPI } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import { SPREAD_TYPES, SPREAD_CARD_COUNTS, UI_TEXT, ERROR_MESSAGES } from "../constants/index";
 import { Card, CardItem } from "../types/index";
 
@@ -12,21 +13,29 @@ const ReadingContainer: React.FC = () => {
     const [saving, setSaving] = useState<boolean>(false);
     const [saveMessage, setSaveMessage] = useState<string>('');
     const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
 
     const handleSpreadChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedSpread(event.target.value);
     }
 
     const handleSaveSpread = async () => {
+        const newReading = {
+            cardReadings: (cards || []).map((cardItem, index) => ({
+                card: cardItem.card,
+                reversed: cardItem.reversed,
+                position: index
+            }))
+        };
+
+        if (!isAuthenticated) {
+            sessionStorage.setItem('pendingSpread', JSON.stringify(newReading));
+            navigate('/auth');
+            return;
+        }
+
         try {
             setSaving(true);
-            const newReading = {
-                cardReadings: (cards || []).map((cardItem, index) => ({
-                    card: cardItem.card,
-                    reversed: cardItem.reversed,
-                    position: index
-                }))
-            };
             await readingAPI.createReading(newReading);
             setSaveMessage(UI_TEXT.SAVE_SUCCESS);
             setTimeout(() => {

@@ -5,6 +5,18 @@ import { BrowserRouter } from 'react-router-dom';
 import ReadingContainer from '../../containers/ReadingContainer';
 import { SPREAD_TYPES, UI_TEXT } from '../../constants/index';
 
+vi.mock('../../context/AuthContext', () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    token: 'test-token',
+    email: 'test@example.com',
+    tier: 'FREE',
+    signIn: vi.fn(),
+    signUp: vi.fn(),
+    signOut: vi.fn(),
+  }),
+}));
+
 vi.mock('../../components/Card.jsx', () => ({
   default: ({ card, cardDescription }) => (
     <div data-testid="card">

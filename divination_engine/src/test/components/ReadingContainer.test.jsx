@@ -6,6 +6,18 @@ import { readingAPI } from '../../services/api'
 // Mock the API service
 vi.mock('../../services/api')
 
+vi.mock('../../context/AuthContext', () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    token: 'test-token',
+    email: 'test@example.com',
+    tier: 'FREE',
+    signIn: vi.fn(),
+    signUp: vi.fn(),
+    signOut: vi.fn(),
+  }),
+}))
+
 // Mock the Card component to avoid image loading issues
 vi.mock('../../components/Card.jsx', () => ({
   default: ({ card, cardDescription }) => (
