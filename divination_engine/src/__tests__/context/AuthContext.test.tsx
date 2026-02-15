@@ -2,13 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-
-// We'll import these once the module exists
-// import { AuthProvider, useAuth } from '../../context/AuthContext';
+import { AuthProvider, useAuth } from '../../context/AuthContext';
 
 const AUTH_STORAGE_KEY = 'authSession';
 
-// Helper to create a mock auth session in localStorage
 function setStoredSession(session: {
   token: string;
   email: string;
@@ -23,7 +20,7 @@ function validSession(overrides = {}) {
     token: 'test-jwt-token',
     email: 'test@example.com',
     tier: 'FREE',
-    expiresAt: Date.now() + 12 * 60 * 60 * 1000, // 12 hours from now
+    expiresAt: Date.now() + 12 * 60 * 60 * 1000,
     ...overrides,
   };
 }
@@ -33,26 +30,25 @@ function expiredSession(overrides = {}) {
     token: 'expired-jwt-token',
     email: 'test@example.com',
     tier: 'FREE',
-    expiresAt: Date.now() - 1000, // 1 second ago
+    expiresAt: Date.now() - 1000,
     ...overrides,
   };
 }
 
-// Test component that consumes the auth context
 function AuthConsumer() {
-  // Dynamic import will be resolved once AuthContext exists
-  const { useAuth } = require('../../context/AuthContext');
   const auth = useAuth();
+  const [error, setError] = React.useState<string>('');
   return (
     <div>
       <span data-testid="authenticated">{String(auth.isAuthenticated)}</span>
       <span data-testid="email">{auth.email || ''}</span>
       <span data-testid="tier">{auth.tier || ''}</span>
       <span data-testid="token">{auth.token || ''}</span>
-      <button data-testid="sign-in" onClick={() => auth.signIn('test@example.com', 'password123')}>
+      <span data-testid="error">{error}</span>
+      <button data-testid="sign-in" onClick={() => auth.signIn('test@example.com', 'password123').catch(e => setError(e.message))}>
         Sign In
       </button>
-      <button data-testid="sign-up" onClick={() => auth.signUp('new@example.com', 'password123')}>
+      <button data-testid="sign-up" onClick={() => auth.signUp('new@example.com', 'password123').catch(e => setError(e.message))}>
         Sign Up
       </button>
       <button data-testid="sign-out" onClick={() => auth.signOut()}>
@@ -63,7 +59,6 @@ function AuthConsumer() {
 }
 
 function renderWithProvider() {
-  const { AuthProvider } = require('../../context/AuthContext');
   return render(
     <AuthProvider>
       <AuthConsumer />
@@ -71,7 +66,6 @@ function renderWithProvider() {
   );
 }
 
-// Mock fetch globally
 const mockFetch = vi.fn();
 
 describe('AuthContext', () => {
@@ -79,7 +73,6 @@ describe('AuthContext', () => {
     localStorage.clear();
     vi.stubGlobal('fetch', mockFetch);
     mockFetch.mockReset();
-    vi.resetModules();
   });
 
   afterEach(() => {
@@ -230,5 +223,6 @@ describe('AuthContext', () => {
 
     // Should remain unauthenticated on failure
     expect(screen.getByTestId('authenticated').textContent).toBe('false');
+    expect(screen.getByTestId('error').textContent).toBe('Invalid credentials');
   });
 });
