@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     if (!user) {
       // Perform dummy bcrypt compare to prevent timing attacks
       // Use a pre-computed hash of a fake password
-      const fakeHash = '$2b$12$dummy.hash.for.timing.attack.prevention';
+      const fakeHash = '$2a$12$Z35RjQXF6qik0kNKpCG1U.IKAdy2v3Ybnv90azQ20JIImyhTjOEFK';
       await compare(password, fakeHash);
       throw new AuthError('Invalid credentials');
     }
