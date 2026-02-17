@@ -7,6 +7,11 @@ jest.mock('@/lib/db', () => ({
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    webhookEvent: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+    },
+    $transaction: jest.fn(),
   },
 }));
 
@@ -18,8 +23,15 @@ jest.mock('../../polar-poc/signature', () => ({
 import { prisma } from '@/lib/db';
 import { verifyWebhookSignature } from '../../polar-poc/signature';
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>;
+const mockPrisma = prisma as any;
 const mockVerify = verifyWebhookSignature as jest.MockedFunction<typeof verifyWebhookSignature>;
+
+// Shorthand refs
+const mockUserFindUnique = mockPrisma.user.findUnique as jest.Mock;
+const mockUserUpdate = mockPrisma.user.update as jest.Mock;
+const mockWebhookEventFindUnique = mockPrisma.webhookEvent.findUnique as jest.Mock;
+const mockWebhookEventCreate = mockPrisma.webhookEvent.create as jest.Mock;
+const mockTransaction = mockPrisma.$transaction as jest.Mock;
 
 const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
 
@@ -76,6 +88,13 @@ describe('POST /api/webhooks/polar', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    // Default: $transaction executes the callback with prisma-like tx object
+    mockTransaction.mockImplementation(async (cb: Function) => {
+      return cb({
+        webhookEvent: { findUnique: mockWebhookEventFindUnique, create: mockWebhookEventCreate },
+        user: { findUnique: mockUserFindUnique, update: mockUserUpdate },
+      });
+    });
     // Dynamic import to pick up env vars and mocks
     const mod = await import('@/app/api/webhooks/polar/route');
     POST = mod.POST;
@@ -107,11 +126,13 @@ describe('POST /api/webhooks/polar', () => {
 
   it('upgrades user to BASIC on subscription.created with basic product', async () => {
     mockVerify.mockReturnValue(true);
-    (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue({
+    mockWebhookEventFindUnique.mockResolvedValue(null);
+    mockWebhookEventCreate.mockResolvedValue({ id: 1, eventId: 'sub_123' });
+    mockUserFindUnique.mockResolvedValue({
       id: mockUserId,
       tier: 'FREE',
     });
-    (mockPrisma.user.update as jest.Mock).mockResolvedValue({
+    mockUserUpdate.mockResolvedValue({
       id: mockUserId,
       tier: 'BASIC',
     });
@@ -133,11 +154,13 @@ describe('POST /api/webhooks/polar', () => {
 
   it('upgrades user to PREMIUM on subscription.created with premium product', async () => {
     mockVerify.mockReturnValue(true);
-    (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue({
+    mockWebhookEventFindUnique.mockResolvedValue(null);
+    mockWebhookEventCreate.mockResolvedValue({ id: 1, eventId: 'sub_123' });
+    mockUserFindUnique.mockResolvedValue({
       id: mockUserId,
       tier: 'FREE',
     });
-    (mockPrisma.user.update as jest.Mock).mockResolvedValue({
+    mockUserUpdate.mockResolvedValue({
       id: mockUserId,
       tier: 'PREMIUM',
     });
@@ -158,11 +181,13 @@ describe('POST /api/webhooks/polar', () => {
 
   it('upgrades user tier on subscription.updated with status active', async () => {
     mockVerify.mockReturnValue(true);
-    (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue({
+    mockWebhookEventFindUnique.mockResolvedValue(null);
+    mockWebhookEventCreate.mockResolvedValue({ id: 1, eventId: 'sub_123' });
+    mockUserFindUnique.mockResolvedValue({
       id: mockUserId,
       tier: 'FREE',
     });
-    (mockPrisma.user.update as jest.Mock).mockResolvedValue({
+    mockUserUpdate.mockResolvedValue({
       id: mockUserId,
       tier: 'BASIC',
     });
@@ -181,11 +206,13 @@ describe('POST /api/webhooks/polar', () => {
 
   it('upgrades user tier on subscription.updated with status trialing', async () => {
     mockVerify.mockReturnValue(true);
-    (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue({
+    mockWebhookEventFindUnique.mockResolvedValue(null);
+    mockWebhookEventCreate.mockResolvedValue({ id: 1, eventId: 'sub_123' });
+    mockUserFindUnique.mockResolvedValue({
       id: mockUserId,
       tier: 'FREE',
     });
-    (mockPrisma.user.update as jest.Mock).mockResolvedValue({
+    mockUserUpdate.mockResolvedValue({
       id: mockUserId,
       tier: 'PREMIUM',
     });
@@ -209,11 +236,13 @@ describe('POST /api/webhooks/polar', () => {
   downgradeStatuses.forEach((status) => {
     it(`downgrades user to FREE on subscription.updated with status ${status}`, async () => {
       mockVerify.mockReturnValue(true);
-      (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue({
+      mockWebhookEventFindUnique.mockResolvedValue(null);
+      mockWebhookEventCreate.mockResolvedValue({ id: 1, eventId: 'sub_123' });
+      mockUserFindUnique.mockResolvedValue({
         id: mockUserId,
         tier: 'PREMIUM',
       });
-      (mockPrisma.user.update as jest.Mock).mockResolvedValue({
+      mockUserUpdate.mockResolvedValue({
         id: mockUserId,
         tier: 'FREE',
       });
@@ -270,7 +299,9 @@ describe('POST /api/webhooks/polar', () => {
 
   it('returns 200 when user not found by externalId (logs warning)', async () => {
     mockVerify.mockReturnValue(true);
-    (mockPrisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+    mockWebhookEventFindUnique.mockResolvedValue(null);
+    mockWebhookEventCreate.mockResolvedValue({ id: 1, eventId: 'sub_123' });
+    mockUserFindUnique.mockResolvedValue(null);
     const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
     const request = createWebhookRequest(
@@ -293,5 +324,78 @@ describe('POST /api/webhooks/polar', () => {
     const response = await POST(request);
 
     expect(response.status).toBe(400);
+  });
+
+  // --- Idempotency ---
+
+  it('should process new webhook event and record it', async () => {
+    mockVerify.mockReturnValue(true);
+    mockWebhookEventFindUnique.mockResolvedValue(null);
+    mockWebhookEventCreate.mockResolvedValue({ id: 1, eventId: 'sub_123' });
+    mockUserFindUnique.mockResolvedValue({
+      id: mockUserId,
+      tier: 'FREE',
+    });
+    mockUserUpdate.mockResolvedValue({
+      id: mockUserId,
+      tier: 'BASIC',
+    });
+
+    const request = createWebhookRequest(
+      subscriptionEvent('subscription.created', MOCK_BASIC_PRODUCT_ID)
+    );
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.received).toBe(true);
+    expect(mockWebhookEventCreate).toHaveBeenCalled();
+  });
+
+  it('should reject duplicate event ID', async () => {
+    mockVerify.mockReturnValue(true);
+    mockWebhookEventFindUnique.mockResolvedValue({
+      id: 1,
+      eventId: 'sub_123',
+      eventType: 'subscription.created',
+      processedAt: new Date(),
+    });
+
+    const request = createWebhookRequest(
+      subscriptionEvent('subscription.created', MOCK_BASIC_PRODUCT_ID)
+    );
+    const response = await POST(request);
+    const json = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(json.received).toBe(true);
+    expect(json.duplicate).toBe(true);
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+  });
+
+  it('should be atomic (rollback on user update failure)', async () => {
+    mockVerify.mockReturnValue(true);
+    mockWebhookEventFindUnique.mockResolvedValue(null);
+    mockWebhookEventCreate.mockResolvedValue({ id: 1, eventId: 'sub_123' });
+    mockUserFindUnique.mockResolvedValue({
+      id: mockUserId,
+      tier: 'FREE',
+    });
+    mockUserUpdate.mockRejectedValue(new Error('DB write failed'));
+    // Make transaction propagate the error
+    mockTransaction.mockImplementation(async (cb: Function) => {
+      return cb({
+        webhookEvent: { findUnique: mockWebhookEventFindUnique, create: mockWebhookEventCreate },
+        user: { findUnique: mockUserFindUnique, update: mockUserUpdate },
+      });
+    });
+
+    const request = createWebhookRequest(
+      subscriptionEvent('subscription.created', MOCK_BASIC_PRODUCT_ID)
+    );
+    const response = await POST(request);
+
+    // Should return 500 since the transaction failed
+    expect(response.status).toBe(500);
   });
 });

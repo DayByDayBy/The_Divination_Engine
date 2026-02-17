@@ -34,47 +34,72 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  // 4. Handle event types
+  // 4. Extract event ID for idempotency
+  const eventId = (event.data?.id as string) || '';
   const { type, data } = event;
 
-  if (type === 'subscription.created' || type === 'subscription.updated') {
-    const customer = data.customer as { externalId?: string } | undefined;
-    const product = data.product as { id?: string } | undefined;
-    const status = (data.status as string) || 'active';
-    const userId = customer?.externalId;
-    const productId = product?.id;
-
-    if (!userId) {
-      console.warn('Webhook missing customer.externalId');
-      return NextResponse.json({ received: true }, { status: 200 });
+  // 5. Idempotency check: if we've already processed this event, return early
+  if (eventId) {
+    const existing = await prisma.webhookEvent.findUnique({ where: { eventId } });
+    if (existing) {
+      console.log(`Duplicate webhook event detected: ${eventId}`);
+      return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
     }
-
-    // Look up user
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      console.warn(`User not found for webhook (id: ${userId.substring(0, 8)}...)`);
-      return NextResponse.json({ received: true }, { status: 200 });
-    }
-
-    if (type === 'subscription.created' || UPGRADE_STATUSES.has(status)) {
-      // Upgrade: map product to tier
-      const tier = productId ? (PRODUCT_TIER_MAP[productId] || 'FREE') : 'FREE';
-      await prisma.user.update({
-        where: { id: userId },
-        data: { tier },
-      });
-    } else if (DOWNGRADE_STATUSES.has(status)) {
-      // Downgrade to FREE
-      await prisma.user.update({
-        where: { id: userId },
-        data: { tier: 'FREE' },
-      });
-    } else {
-      console.warn(`Unrecognised subscription status: ${status}`);
-    }
-  } else {
-    console.log(`Unhandled webhook event type: ${type}`);
   }
 
-  return NextResponse.json({ received: true }, { status: 200 });
+  // 6. Handle event types inside a transaction for atomicity
+  try {
+    if (type === 'subscription.created' || type === 'subscription.updated') {
+      const customer = data.customer as { externalId?: string } | undefined;
+      const product = data.product as { id?: string } | undefined;
+      const status = (data.status as string) || 'active';
+      const userId = customer?.externalId;
+      const productId = product?.id;
+
+      if (!userId) {
+        console.warn('Webhook missing customer.externalId');
+        return NextResponse.json({ received: true }, { status: 200 });
+      }
+
+      await prisma.$transaction(async (tx: any) => {
+        // Record the webhook event for idempotency
+        if (eventId) {
+          await tx.webhookEvent.create({
+            data: { eventId, eventType: type },
+          });
+        }
+
+        // Look up user
+        const user = await tx.user.findUnique({ where: { id: userId } });
+        if (!user) {
+          console.warn(`User not found for webhook (id: ${userId.substring(0, 8)}...)`);
+          return;
+        }
+
+        if (type === 'subscription.created' || UPGRADE_STATUSES.has(status)) {
+          // Upgrade: map product to tier
+          const tier = productId ? (PRODUCT_TIER_MAP[productId] || 'FREE') : 'FREE';
+          await tx.user.update({
+            where: { id: userId },
+            data: { tier },
+          });
+        } else if (DOWNGRADE_STATUSES.has(status)) {
+          // Downgrade to FREE
+          await tx.user.update({
+            where: { id: userId },
+            data: { tier: 'FREE' },
+          });
+        } else {
+          console.warn(`Unrecognised subscription status: ${status}`);
+        }
+      });
+    } else {
+      console.log(`Unhandled webhook event type: ${type}`);
+    }
+
+    return NextResponse.json({ received: true }, { status: 200 });
+  } catch (error) {
+    console.error('Webhook processing error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }
