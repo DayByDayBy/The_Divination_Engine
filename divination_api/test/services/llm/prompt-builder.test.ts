@@ -124,4 +124,17 @@ describe('buildPrompt', () => {
     expect(prompt).toContain('Position 2');
     expect(prompt).toContain('Position 3');
   });
+
+  it('should include output format instructions in prompt', () => {
+    const prompt = buildPrompt({
+      spreadType: 'THREE_CARD',
+      userInput: 'What does my future hold?',
+      cards: sampleCards,
+    });
+
+    expect(prompt).toMatch(/overview/i);
+    expect(prompt).toMatch(/individual card/i);
+    expect(prompt).toMatch(/synthesis/i);
+    expect(prompt).toMatch(/under 500 words/i);
+  });
 });

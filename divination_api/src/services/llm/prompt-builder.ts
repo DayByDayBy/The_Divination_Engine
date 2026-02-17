@@ -22,6 +22,14 @@ const SPREAD_DESCRIPTIONS: Record<SpreadType, string> = {
   CUSTOM: 'a custom spread layout',
 };
 
+const OUTPUT_FORMAT_GUIDANCE = `
+Structure your interpretation as follows:
+1. Overview (2-3 sentences)
+2. Individual card insights (1-2 sentences each)
+3. Synthesis and guidance (2-3 sentences)
+
+Keep the total response under 500 words. Be specific and actionable.`;
+
 export function buildPrompt(request: PromptRequest): string {
   const { spreadType, userInput, userContext, cards } = request;
 
@@ -44,6 +52,8 @@ The querent asks: "${userInput}"`;
   prompt += `\n\nCards drawn:\n\n${cardDetails}`;
 
   prompt += `\n\nProvide a thoughtful, insightful interpretation that connects the cards to the querent's question. Be specific about how each card relates to their situation.`;
+
+  prompt += `\n${OUTPUT_FORMAT_GUIDANCE}`;
 
   return prompt;
 }
