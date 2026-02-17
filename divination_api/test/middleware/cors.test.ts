@@ -69,6 +69,20 @@ describe('CORS middleware', () => {
     expect(result.headers.get('Access-Control-Allow-Headers')).toBeDefined();
   });
 
+  it('should handle undefined ALLOWED_ORIGINS', () => {
+    delete process.env.ALLOWED_ORIGINS;
+
+    const request = new NextRequest('http://localhost:3000/api/test', {
+      headers: { origin: 'http://localhost:3002' },
+    });
+    const response = NextResponse.json({ data: 'test' });
+
+    const result = applyCors(request, response);
+
+    expect(result.headers.get('Access-Control-Allow-Origin')).toBeNull();
+    expect(result.headers.get('Access-Control-Allow-Credentials')).toBeNull();
+  });
+
   it('should handle empty ALLOWED_ORIGINS', () => {
     process.env.ALLOWED_ORIGINS = '';
 
