@@ -7,18 +7,16 @@ services:
       dockerfile: Dockerfile
     container_name: divination-backend
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-prod}
-      DB_URL: ${DB_URL:-jdbc:postgresql://host.docker.internal:5432/divination}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_DRIVER: ${DB_DRIVER:-org.postgresql.Driver}
-      SERVER_PORT: ${SERVER_PORT:-8080}
+      DATABASE_URL: ${DATABASE_URL}
+      DIRECT_URL: ${DIRECT_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     ports:
-      - "8080:8080"
+      - "3000:3000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/api/actuator/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -34,4 +32,4 @@ services:
     depends_on:
       - backend
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:8080/api}
+      VITE_API_URL: ${VITE_API_URL:-/api}
