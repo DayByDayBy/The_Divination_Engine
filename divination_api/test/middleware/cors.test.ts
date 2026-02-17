@@ -9,6 +9,10 @@ describe('CORS middleware', () => {
     applyCors = mod.applyCors;
   });
 
+  afterEach(() => {
+    delete process.env.ALLOWED_ORIGINS;
+  });
+
   it('should add CORS headers when ALLOWED_ORIGINS set', () => {
     process.env.ALLOWED_ORIGINS = 'http://localhost:3002,https://example.com';
 
