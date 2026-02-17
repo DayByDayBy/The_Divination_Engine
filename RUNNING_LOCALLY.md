@@ -51,6 +51,15 @@ Edit `.env.local` — fill in your **Supabase credentials**:
 - `DATABASE_URL` and `DIRECT_URL` — get from **Supabase Dashboard → Project Settings → Database**
 - `JWT_SECRET` — generate one: `openssl rand -base64 32`
 
+**Optional: Polar Monetization**
+
+If you want to test subscription webhooks, add Polar credentials to `.env.local`:
+
+- `POLAR_ACCESS_TOKEN`, `POLAR_WEBHOOK_SECRET`, `POLAR_ORGANIZATION_ID` — get from [Polar Dashboard](https://polar.sh/dashboard)
+- `POLAR_PRODUCT_ID_BASIC`, `POLAR_PRODUCT_ID_PREMIUM` — your product IDs for tier mapping
+
+Without these, the app runs normally but subscription webhooks won't work.
+
 Then push the schema and start the server:
 
 ```bash
