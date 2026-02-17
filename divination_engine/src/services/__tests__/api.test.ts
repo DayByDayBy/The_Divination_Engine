@@ -29,7 +29,7 @@ describe('API_BASE_URL configuration', () => {
   });
 
   it("should fallback to '/api' when VITE_API_URL is undefined", async () => {
-    vi.stubEnv('VITE_API_URL', '');
+    vi.stubEnv('VITE_API_URL', undefined as unknown as string);
 
     const mod = await import('../api');
     const mockFetch = vi.fn().mockResolvedValue({
