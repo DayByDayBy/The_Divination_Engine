@@ -68,6 +68,7 @@ target/
 .mvn/
 .gradle/
 build/
+!divination_api/test/build/
 HELP.md
 
 # ============================================
