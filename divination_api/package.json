@@ -13,7 +13,8 @@
     "db:test": "tsx scripts/test-db-connection.ts",
     "db:seed": "tsx prisma/seed.ts",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:build": "jest --config jest.config.build.js"
   },
   "dependencies": {
     "@polar-sh/sdk": "^0.42.5",
