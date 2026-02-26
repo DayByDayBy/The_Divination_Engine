@@ -5,7 +5,7 @@ import { signJwt } from '@/lib/jwt';
 import { validate } from '@/lib/validation';
 import { RegisterRequestSchema, AuthResponse } from '@/schemas';
 import { handleError } from '@/middleware/error-handler';
-import { ConflictError, ValidationError } from '@/lib/errors';
+import { ConflictError } from '@/lib/errors';
 import { applyRateLimit } from '@/middleware/rate-limit-middleware';
 
 export async function POST(request: NextRequest) {

@@ -1,9 +1,9 @@
 import { SignJWT, jwtVerify } from 'jose';
-import { JwtClaims, UserTier } from '@/schemas';
+import { UserTier } from '@/schemas';
 import { AuthError } from './errors';
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRATION = '24h'; // 24 hours
+const JWT_EXPIRATION_SECONDS = 24 * 60 * 60;
 
 if (!JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is required');
@@ -27,8 +27,7 @@ export interface JwtPayload {
  */
 export async function signJwt(userId: string, tier: UserTier): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
-  const exp = now + 24 * 60 * 60; // 24 hours from now
-
+  const exp = now + JWT_EXPIRATION_SECONDS;
   const token = await new SignJWT({
     sub: userId,
     tier,

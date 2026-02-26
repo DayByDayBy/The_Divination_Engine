@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { extractTokenFromHeader, verifyJwt, JwtPayload } from '@/lib/jwt';
+import { extractTokenFromHeader, verifyJwt } from '@/lib/jwt';
 import { AuthError } from '@/lib/errors';
 
 export interface AuthContext {
@@ -84,7 +84,7 @@ export async function optionalAuth(request: NextRequest): Promise<AuthContext | 
       userId: payload.sub,
       tier: payload.tier,
     };
-  } catch (error) {
+  } catch {
     // For optional auth, return null on any error
     return null;
   }

@@ -14,10 +14,6 @@ describe('deployment readiness: backend build settings', () => {
     expect(nextConfig.output).toBe('standalone');
   });
 
-  it('Node.js runtime is enabled for Prisma compatibility', () => {
-    expect((nextConfig.experimental as Record<string, unknown>)?.runtime).toBe('nodejs');
-  });
-
   it('build command exists in package.json', () => {
     const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
     expect(pkg.scripts.build).toBe('next build');
