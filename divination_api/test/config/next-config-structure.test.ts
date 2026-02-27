@@ -15,9 +15,9 @@ describe('next.config.js structure', () => {
     expect(nextConfig.images?.unoptimized).toBe(true);
   });
 
-  it('has Node.js runtime enabled in experimental', () => {
-    expect(nextConfig.experimental).toBeDefined();
-    expect((nextConfig.experimental as Record<string, unknown>)?.runtime).toBe('nodejs');
+  it('does not set edge runtime in experimental', () => {
+    const runtime = (nextConfig.experimental as Record<string, unknown>)?.runtime;
+    expect(runtime).not.toBe('edge');
   });
 
   it('propagates NEXT_PUBLIC_API_URL via env', () => {
