@@ -6,6 +6,7 @@ import goldenFixtures from '../fixtures/golden-requests.json';
 jest.mock('@/lib/db', () => ({
   prisma: {
     reading: {
+      findUnique: jest.fn(),
       update: jest.fn(),
     },
   },
@@ -41,6 +42,7 @@ describe('Interpretation Contract Tests', () => {
 
   describe('POST /api/tarot/interpret', () => {
     it('response format matches golden fixture', async () => {
+      (mockPrisma.reading.findUnique as jest.Mock).mockResolvedValue({ id: 1, userId: mockUserId });
       (mockPrisma.reading.update as jest.Mock).mockResolvedValue({});
 
       const request = new NextRequest('http://localhost:3000/api/tarot/interpret', {
@@ -99,6 +101,7 @@ describe('Interpretation Contract Tests', () => {
         ),
       }));
 
+      (mockPrisma.reading.findUnique as jest.Mock).mockResolvedValue({ id: 1, userId: mockUserId });
       (mockPrisma.reading.update as jest.Mock).mockResolvedValue({});
 
       const request = new NextRequest('http://localhost:3000/api/tarot/interpret', {

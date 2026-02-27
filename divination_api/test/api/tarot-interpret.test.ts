@@ -5,6 +5,7 @@ import { InterpretResponseSchema, ErrorResponseSchema } from '@/schemas';
 jest.mock('@/lib/db', () => ({
   prisma: {
     reading: {
+      findUnique: jest.fn(),
       update: jest.fn(),
     },
   },
@@ -65,6 +66,7 @@ describe('POST /api/tarot/interpret', () => {
 
   it('returns interpretation for authenticated user with valid request', async () => {
     mockRequireAuth.mockResolvedValue({ userId: mockUserId, tier: 'FREE' });
+    (mockPrisma.reading.findUnique as jest.Mock).mockResolvedValue({ id: 1, userId: mockUserId });
     (mockPrisma.reading.update as jest.Mock).mockResolvedValue({});
 
     const request = createRequest(validBody, { Authorization: 'Bearer valid-token' });
@@ -81,6 +83,7 @@ describe('POST /api/tarot/interpret', () => {
 
   it('saves interpretation to reading in database', async () => {
     mockRequireAuth.mockResolvedValue({ userId: mockUserId, tier: 'FREE' });
+    (mockPrisma.reading.findUnique as jest.Mock).mockResolvedValue({ id: 1, userId: mockUserId });
     (mockPrisma.reading.update as jest.Mock).mockResolvedValue({});
 
     const request = createRequest(validBody, { Authorization: 'Bearer valid-token' });
