@@ -40,12 +40,7 @@ export async function POST(request: NextRequest) {
 
     const { readingId, userInput, cards, spreadType, userContext } = parseResult.data;
 
-    const prompt = buildPrompt({ spreadType, userInput, userContext, cards });
-
-    const llmService = getLlmService();
-    const interpretation = await llmService.generateInterpretation(prompt);
-
-    // Verify reading ownership before updating
+    // Verify reading ownership before calling LLM
     const reading = await prisma.reading.findUnique({
       where: { id: readingId },
     });
@@ -75,6 +70,11 @@ export async function POST(request: NextRequest) {
         { status: 403 }
       );
     }
+
+    const prompt = buildPrompt({ spreadType, userInput, userContext, cards });
+
+    const llmService = getLlmService();
+    const interpretation = await llmService.generateInterpretation(prompt);
 
     await prisma.reading.update({
       where: { id: readingId },
