@@ -75,17 +75,17 @@ export const handlers = [
   }),
 
   // Get all readings
-http.get('/api/readings', () => {
-  return HttpResponse.json({
-    data: mockReadings,
-    meta: {
-      page: 1,
-      pageSize: 10,
-      totalCount: mockReadings.length,
-      totalPages: 1
-    }
-  });
-}),
+  http.get('/api/readings', () => {
+    return HttpResponse.json({
+      data: mockReadings,
+      meta: {
+        page: 1,
+        pageSize: 10,
+        totalCount: mockReadings.length,
+        totalPages: 1
+      }
+    });
+  }),
 
   // Get reading by ID
   http.get('/api/readings/:id', ({ params }) => {
