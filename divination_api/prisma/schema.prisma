@@ -67,7 +67,8 @@ model User {
   createdAt        DateTime  @default(now()) @map("created_at")
 
   // Relations
-  readings Reading[]
+  readings     Reading[]
+  usageRecords UsageRecord[]
 
   @@map("users")
 }
@@ -113,4 +114,21 @@ model WebhookEvent {
   processedAt DateTime @default(now()) @map("processed_at")
 
   @@map("webhook_events")
+}
+
+// =============================================================================
+// Usage Metering for LLM
+// =============================================================================
+
+model UsageRecord {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  month     String   // Format: "YYYY-MM"
+  count     Int      @default(0)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
+  @@map("usage_records")
 }
