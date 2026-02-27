@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAppError, AppError } from '@/lib/errors';
+import { isAppError } from '@/lib/errors';
 import { ErrorResponse } from '@/schemas';
 
 // Global error handler for API routes
