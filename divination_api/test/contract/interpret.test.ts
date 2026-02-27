@@ -9,6 +9,10 @@ jest.mock('@/lib/db', () => ({
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    usageRecord: {
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
+    },
   },
 }));
 
@@ -28,7 +32,18 @@ import { prisma } from '@/lib/db';
 import { requireAuth } from '@/middleware/auth';
 import { POST } from '@/app/api/tarot/interpret/route';
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>;
+type PrismaMock = {
+  reading: {
+    findUnique: jest.Mock;
+    update: jest.Mock;
+  };
+  usageRecord: {
+    findUnique: jest.Mock;
+    upsert: jest.Mock;
+  };
+};
+
+const mockPrisma = prisma as unknown as PrismaMock;
 const mockRequireAuth = requireAuth as jest.MockedFunction<typeof requireAuth>;
 
 const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
@@ -38,6 +53,8 @@ describe('Interpretation Contract Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRequireAuth.mockResolvedValue({ userId: mockUserId, tier: 'FREE' });
+    mockPrisma.usageRecord.findUnique.mockResolvedValue({ count: 0 });
+    mockPrisma.usageRecord.upsert.mockResolvedValue({ count: 1 });
   });
 
   describe('POST /api/tarot/interpret', () => {

@@ -7,6 +7,27 @@ import { prisma } from '@/lib/db';
 import { signJwt } from '@/lib/jwt';
 import { UserTier } from '@/schemas/auth';
 
+type PrismaMock = {
+  reading: {
+    findUnique: jest.Mock;
+    update: jest.Mock;
+    create: jest.Mock;
+  };
+  user: {
+    findUnique: jest.Mock;
+    create: jest.Mock;
+  };
+  card: {
+    findMany: jest.Mock;
+  };
+  usageRecord: {
+    findUnique: jest.Mock;
+    upsert: jest.Mock;
+  };
+};
+
+const mockPrisma = prisma as unknown as PrismaMock;
+
 // Mock dependencies
 jest.mock('@/lib/db', () => ({
   prisma: {
@@ -21,6 +42,10 @@ jest.mock('@/lib/db', () => ({
     },
     card: {
       findMany: jest.fn(),
+    },
+    usageRecord: {
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
     },
   },
 }));
@@ -76,6 +101,8 @@ describe('Security Fixes Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockPrisma.usageRecord.findUnique.mockResolvedValue({ count: 0 });
+    mockPrisma.usageRecord.upsert.mockResolvedValue({ count: 1 });
     
     // Mock users
     mockUser = {

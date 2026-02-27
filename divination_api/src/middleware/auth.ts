@@ -1,10 +1,11 @@
 import { NextRequest } from 'next/server';
 import { extractTokenFromHeader, verifyJwt } from '@/lib/jwt';
 import { AuthError } from '@/lib/errors';
+import { UserTier } from '@/schemas';
 
 export interface AuthContext {
   userId: string;
-  tier: string;
+  tier: UserTier;
 }
 
 /**

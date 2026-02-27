@@ -8,6 +8,10 @@ jest.mock('@/lib/db', () => ({
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    usageRecord: {
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
+    },
   },
 }));
 
@@ -27,7 +31,18 @@ import { prisma } from '@/lib/db';
 import { requireAuth } from '@/middleware/auth';
 import { POST } from '@/app/api/tarot/interpret/route';
 
-const mockPrisma = prisma as jest.Mocked<typeof prisma>;
+type PrismaMock = {
+  reading: {
+    findUnique: jest.Mock;
+    update: jest.Mock;
+  };
+  usageRecord: {
+    findUnique: jest.Mock;
+    upsert: jest.Mock;
+  };
+};
+
+const mockPrisma = prisma as unknown as PrismaMock;
 const mockRequireAuth = requireAuth as jest.MockedFunction<typeof requireAuth>;
 
 const mockUserId = '550e8400-e29b-41d4-a716-446655440000';
@@ -62,6 +77,8 @@ const validBody = {
 describe('POST /api/tarot/interpret', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (mockPrisma.usageRecord.findUnique as jest.Mock).mockResolvedValue({ count: 0 });
+    (mockPrisma.usageRecord.upsert as jest.Mock).mockResolvedValue({ count: 1 });
   });
 
   it('returns interpretation for authenticated user with valid request', async () => {
@@ -97,6 +114,23 @@ describe('POST /api/tarot/interpret', () => {
         }),
       })
     );
+    expect(mockPrisma.usageRecord.upsert).toHaveBeenCalled();
+  });
+
+  it('returns 429 when usage quota is exceeded', async () => {
+    mockRequireAuth.mockResolvedValue({ userId: mockUserId, tier: 'FREE' });
+    (mockPrisma.reading.findUnique as jest.Mock).mockResolvedValue({ id: 1, userId: mockUserId });
+    (mockPrisma.usageRecord.findUnique as jest.Mock).mockResolvedValue({ count: 3 });
+
+    const request = createRequest(validBody, { Authorization: 'Bearer valid-token' });
+    const response = await POST(request);
+    const body = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(body.error).toBe('Too Many Requests');
+    expect(body.message).toBe('Rate limit exceeded. Upgrade your tier for more readings.');
+    expect(mockPrisma.reading.update).not.toHaveBeenCalled();
+    expect(mockPrisma.usageRecord.upsert).not.toHaveBeenCalled();
   });
 
   it('returns 401 when no JWT provided', async () => {

@@ -8,6 +8,7 @@ import { ValidationError } from '@/lib/errors';
 import { buildPrompt } from '@/services/llm/prompt-builder';
 import { OpenAiProvider } from '@/services/llm/openai-provider';
 import { LlmTimeoutError, LlmRateLimitError } from '@/services/llm/types';
+import { UsageService } from '@/services/usage-service';
 
 function getLlmService() {
   return new OpenAiProvider({
@@ -71,10 +72,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const hasQuota = await UsageService.checkQuota(auth.userId, auth.tier);
+    if (!hasQuota) {
+      return NextResponse.json(
+        {
+          timestamp: new Date().toISOString(),
+          status: 429,
+          error: 'Too Many Requests',
+          message: 'Rate limit exceeded. Upgrade your tier for more readings.',
+          path: request.nextUrl.pathname,
+        },
+        { status: 429 }
+      );
+    }
+
     const prompt = buildPrompt({ spreadType, userInput, userContext, cards });
 
     const llmService = getLlmService();
     const interpretation = await llmService.generateInterpretation(prompt);
+
+    await UsageService.incrementUsage(auth.userId);
 
     await prisma.reading.update({
       where: { id: readingId },
