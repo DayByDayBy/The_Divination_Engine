@@ -13,9 +13,11 @@ describe('CreateReadingRequestSchema', () => {
 
   it('accepts position 77 (max for 78 cards, 0-indexed)', () => {
     const request = {
-      cardReadings: [
-        { card: { id: 1 }, position: 77, reversed: true },
-      ],
+      cardReadings: Array.from({ length: 78 }, (_, i) => ({
+        card: { id: i + 1 },
+        position: i,
+        reversed: i % 2 === 0,
+      })),
     };
 
     expect(() => CreateReadingRequestSchema.parse(request)).not.toThrow();
