@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 describe('API_BASE_URL configuration', () => {
   beforeEach(() => {
@@ -47,5 +47,48 @@ describe('API_BASE_URL configuration', () => {
 
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
+  });
+});
+
+describe('Auth token wiring', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    localStorage.clear();
+  });
+
+  it('attaches Bearer token from authSession localStorage', async () => {
+    const session = { token: 'test-jwt-token', email: 'a@b.com', tier: 'FREE', expiresAt: Date.now() + 60000 };
+    localStorage.setItem('authSession', JSON.stringify(session));
+
+    const mod = await import('../api');
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    await mod.cardAPI.getAllCards();
+
+    const callHeaders = mockFetch.mock.calls[0][1].headers;
+    expect(callHeaders.Authorization).toBe('Bearer test-jwt-token');
+  });
+
+  it('does not attach Authorization header when no session exists', async () => {
+    const mod = await import('../api');
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([]),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    await mod.cardAPI.getAllCards();
+
+    const callHeaders = mockFetch.mock.calls[0][1].headers;
+    expect(callHeaders.Authorization).toBeUndefined();
   });
 });
