@@ -2,25 +2,16 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 import { Card, Reading } from '../types/index';
 
-const AUTH_TOKEN_KEY = 'divination_auth_token';
+const AUTH_STORAGE_KEY = 'authSession';
 
 const getAuthToken = (): string | null => {
   try {
-    return localStorage.getItem(AUTH_TOKEN_KEY);
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    return session?.token ?? null;
   } catch {
     return null;
-  }
-};
-
-export const setAuthToken = (token: string | null) => {
-  try {
-    if (token) {
-      localStorage.setItem(AUTH_TOKEN_KEY, token);
-    } else {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-    }
-  } catch {
-    return;
   }
 };
 
