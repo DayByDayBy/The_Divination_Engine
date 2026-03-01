@@ -51,8 +51,14 @@ export function verifyWebhookSignature(
       .digest('hex');
 
     // Timing-safe comparison to prevent timing attacks
-    const signatureBuffer = Buffer.from(parts.signature, 'hex');
+    // Validate signature is hex string before Buffer conversion
+    if (!/^[0-9a-fA-F]+$/.test(parts.signature)) {
+      console.error('Invalid signature format: contains non-hex characters');
+      return false;
+    }
+    
     const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+    const signatureBuffer = Buffer.from(parts.signature, 'hex');
 
     if (signatureBuffer.length !== expectedBuffer.length) {
       return false;
