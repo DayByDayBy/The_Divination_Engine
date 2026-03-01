@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyWebhookSignature } from '@/lib/webhook-signature';
+import { Prisma } from '@prisma/client';
 
 type UserTier = 'FREE' | 'BASIC' | 'PREMIUM';
 
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true }, { status: 200 });
       }
 
-      await prisma.$transaction(async (tx: any) => {
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // Record the webhook event for idempotency
         if (eventId) {
           await tx.webhookEvent.create({
