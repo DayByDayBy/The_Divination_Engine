@@ -15,13 +15,13 @@ jest.mock('@/lib/db', () => ({
   },
 }));
 
-// Mock signature verification - import from polar-poc
-jest.mock('../../polar-poc/signature', () => ({
+// Mock signature verification - import from lib
+jest.mock('@/lib/webhook-signature', () => ({
   verifyWebhookSignature: jest.fn(),
 }));
 
 import { prisma } from '@/lib/db';
-import { verifyWebhookSignature } from '../../polar-poc/signature';
+import { verifyWebhookSignature } from '@/lib/webhook-signature';
 
 const mockPrisma = prisma as any;
 const mockVerify = verifyWebhookSignature as jest.MockedFunction<typeof verifyWebhookSignature>;
