@@ -200,3 +200,6 @@ This project is licensed under the [Apache License 2.0](./LICENSE).
 ---
 
 *The Divination Engine is a tool for self-knowledge, not supernatural insight. The cards don't know your future—but they might help you see what you already feel.*
+
+
+
