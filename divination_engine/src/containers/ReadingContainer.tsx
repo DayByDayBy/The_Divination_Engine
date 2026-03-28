@@ -5,27 +5,31 @@ import Reading from "../components/Reading";
 import { readingAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { SPREAD_TYPES, SPREAD_CARD_COUNTS, UI_TEXT, ERROR_MESSAGES } from "../constants/index";
-import { Card, CardItem } from "../types/index";
+import { CardItem } from "../types/index";
 
 const ReadingContainer: React.FC = () => {
     const [selectedSpread, setSelectedSpread] = useState<string>('');
     const [cards, setCards] = useState<CardItem[] | null>(null);
     const [saving, setSaving] = useState<boolean>(false);
     const [saveMessage, setSaveMessage] = useState<string>('');
+    const [interpretation, setInterpretation] = useState<string | null>(null);
+    const [interpreting, setInterpreting] = useState<boolean>(false);
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
 
     const handleSpreadChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedSpread(event.target.value);
-    }
+        setInterpretation(null);
+        setSaveMessage('');
+    };
 
     const handleSaveSpread = async () => {
         const newReading = {
             cardReadings: (cards || []).map((cardItem, index) => ({
                 card: cardItem.card,
                 reversed: cardItem.reversed,
-                position: index
-            }))
+                position: index,
+            })),
         };
 
         if (!isAuthenticated) {
@@ -36,37 +40,36 @@ const ReadingContainer: React.FC = () => {
 
         try {
             setSaving(true);
-            await readingAPI.createReading(newReading);
+            const created = await readingAPI.createReading(newReading);
             setSaveMessage(UI_TEXT.SAVE_SUCCESS);
-            setTimeout(() => {
-                navigate('/archive');
-            }, 1000);
+
+            setInterpreting(true);
+            const text = await readingAPI.interpretReading(
+                created.id,
+                cards || [],
+                selectedSpread,
+            );
+            setInterpretation(text);
         } catch (error) {
             console.error(ERROR_MESSAGES.SAVE_READING_FAILED, error);
             setSaveMessage(UI_TEXT.SAVE_FAILED);
         } finally {
             setSaving(false);
+            setInterpreting(false);
         }
     };
 
     useEffect(() => {
         const fetchData = async () => {
             const cardCount = SPREAD_CARD_COUNTS[selectedSpread];
-            console.log('Debug - selectedSpread:', selectedSpread, 'cardCount:', cardCount);
-            
             if (cardCount > 0) {
                 try {
-                    console.log('Debug - fetching', cardCount, 'cards...');
                     const cardsData = await readingAPI.getRandomCards(cardCount);
-                    console.log('Debug - API response:', cardsData);
-                    const cardReadings = cardsData.map((card, index) => {
-                        return {
-                            reversed: Math.random() < 0.5,
-                            position: index,
-                            card: card
-                        };
-                    });
-                    console.log('Debug - cardReadings:', cardReadings);
+                    const cardReadings = cardsData.map((card, index) => ({
+                        reversed: Math.random() < 0.5,
+                        position: index,
+                        card,
+                    }));
                     setCards(cardReadings);
                 } catch (error) {
                     console.error(ERROR_MESSAGES.FETCH_CARDS_FAILED, error);
@@ -77,9 +80,6 @@ const ReadingContainer: React.FC = () => {
         fetchData();
     }, [selectedSpread]);
 
-
-    console.log('Debug - render cards:', cards);
-    
     return (
         <div className="reading-container">
             <div className="reading-dropdown">
@@ -98,26 +98,43 @@ const ReadingContainer: React.FC = () => {
 
             {cards ? (
                 <>
-                    <Spread
-                        cards={cards}
-                    />
+                    <Spread cards={cards} />
                     <div className="reading-actions">
-                        <input 
-                            type="submit"
-                            className="save-button"
-                            name="submit"
-                            value={saving ? UI_TEXT.SAVING : UI_TEXT.SAVE_SPREAD}
-                            onClick={handleSaveSpread}
-                            disabled={saving}
-                        />
+                        {!interpretation && (
+                            <input
+                                type="submit"
+                                className="save-button"
+                                name="submit"
+                                value={saving ? UI_TEXT.SAVING : UI_TEXT.SAVE_SPREAD}
+                                onClick={handleSaveSpread}
+                                disabled={saving || interpreting}
+                            />
+                        )}
+                        {interpretation && (
+                            <button
+                                className="archive-button"
+                                onClick={() => navigate('/archive')}
+                            >
+                                View in Archive
+                            </button>
+                        )}
                     </div>
                     <Reading cards={cards} />
+                    {interpreting && (
+                        <div className="loading">Generating interpretation...</div>
+                    )}
+                    {interpretation && (
+                        <div className="interpretation">
+                            <h3>Interpretation</h3>
+                            <p>{interpretation}</p>
+                        </div>
+                    )}
                 </>
             ) : selectedSpread ? (
                 <div className="loading">{UI_TEXT.LOADING}</div>
             ) : null}
         </div>
     );
-}
+};
 
 export default ReadingContainer;
