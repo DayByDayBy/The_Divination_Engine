@@ -19,5 +19,8 @@ export interface CardItem {
 
 export interface Reading {
     id: number;
+    userId?: string;
+    llmInterpretation?: string | null;
+    createdAt?: string;
     cardReadings?: CardItem[];
 }

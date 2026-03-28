@@ -40,7 +40,8 @@ export const API_ENDPOINTS = {
   CARDS: '/api/cards',
   CARDS_RANDOM: (count: number) => `/api/reading/${count}`,
   READINGS: '/api/readings',
-  READING_BY_ID: (id: number) => `/api/readings/${id}`
+  READING_BY_ID: (id: number) => `/api/readings/${id}`,
+  INTERPRET: '/api/tarot/interpret'
 };
 
 export const ERROR_MESSAGES = {

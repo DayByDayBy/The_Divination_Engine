@@ -87,6 +87,36 @@ export const readingAPI = {
     }
     return;
   },
+
+  interpretReading: async (
+    readingId: number,
+    cards: CardItem[],
+    spreadType: string,
+    userInput: string = 'Please interpret this reading.'
+): Promise<string> => {
+    const response = await apiFetch(`/tarot/interpret`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            readingId,
+            userInput,
+            spreadType,
+            cards: cards.map(c => ({
+                name: c.card.name,
+                reversed: c.reversed,
+                meaningUp: c.card.meaningUp,
+                meaningRev: c.card.meaningRev,
+                position: c.position ?? 0,
+            })),
+        }),
+    });
+    if (!response.ok) {
+        throw new Error('Failed to generate interpretation');
+    }
+    const result = await response.json();
+    return result.interpretation;
+},
+
 };
 
 export const cardAPI = {
