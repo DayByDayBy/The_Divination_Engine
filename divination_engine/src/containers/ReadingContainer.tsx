@@ -38,23 +38,33 @@ const ReadingContainer: React.FC = () => {
             return;
         }
 
+        let createdId: number;
+
         try {
             setSaving(true);
             const created = await readingAPI.createReading(newReading);
             setSaveMessage(UI_TEXT.SAVE_SUCCESS);
+            createdId = created.id;
+        } catch (error) {
+            console.error(ERROR_MESSAGES.SAVE_READING_FAILED, error);
+            setSaveMessage(UI_TEXT.SAVE_FAILED);
+            return;
+        } finally {
+            setSaving(false);
+        }
 
+        try {
             setInterpreting(true);
             const text = await readingAPI.interpretReading(
-                created.id,
+                createdId,
                 cards || [],
                 selectedSpread,
             );
             setInterpretation(text);
         } catch (error) {
-            console.error(ERROR_MESSAGES.SAVE_READING_FAILED, error);
-            setSaveMessage(UI_TEXT.SAVE_FAILED);
+            console.error('Failed to generate interpretation', error);
+            setInterpretation(null);
         } finally {
-            setSaving(false);
             setInterpreting(false);
         }
     };

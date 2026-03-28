@@ -122,13 +122,13 @@ model WebhookEvent {
 
 model UsageRecord {
   id        Int      @id @default(autoincrement())
-  userId    String   @map("user_id")
-  month     String   // Format: "YYYY-MM"
+  userId    String   @map("user_id") @db.Uuid
+  day       String
   count     Int      @default(0)
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, month])
+  @@unique([userId, day])
   @@map("usage_records")
 }
