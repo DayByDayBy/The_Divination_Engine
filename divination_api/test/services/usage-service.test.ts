@@ -25,23 +25,23 @@ describe('UsageService', () => {
     jest.useRealTimers();
   });
 
-  it('formats current month as YYYY-MM in UTC', () => {
+  it('formats current day as YYYY-MM-DD in UTC', () => {
     jest.useFakeTimers().setSystemTime(new Date('2026-02-15T08:00:00.000Z'));
 
-    expect(UsageService.getCurrentMonth()).toBe('2026-02');
+    expect(UsageService.getCurrentDay()).toBe('2026-02-15');
   });
 
-  it('returns usage count when monthly record exists', async () => {
+  it('returns usage count when daily record exists', async () => {
     mockPrisma.usageRecord.findUnique.mockResolvedValue({ count: 7 });
 
-    const usage = await UsageService.getUsage('user-1', '2026-02');
+    const usage = await UsageService.getUsage('user-1', '2026-02-15');
 
     expect(usage).toBe(7);
     expect(mockPrisma.usageRecord.findUnique).toHaveBeenCalledWith({
       where: {
-        userId_month: {
+        userId_day: {
           userId: 'user-1',
-          month: '2026-02',
+          day: '2026-02-15',
         },
       },
     });
@@ -50,7 +50,7 @@ describe('UsageService', () => {
   it('returns 0 when no usage record exists', async () => {
     mockPrisma.usageRecord.findUnique.mockResolvedValue(null);
 
-    const usage = await UsageService.getUsage('user-1', '2026-02');
+    const usage = await UsageService.getUsage('user-1', '2026-02-15');
 
     expect(usage).toBe(0);
   });
@@ -81,14 +81,14 @@ describe('UsageService', () => {
   it('increments usage via upsert and returns updated count', async () => {
     mockPrisma.usageRecord.upsert.mockResolvedValue({ count: 4 });
 
-    const count = await UsageService.incrementUsage('user-1', '2026-02');
+    const count = await UsageService.incrementUsage('user-1', '2026-02-15');
 
     expect(count).toBe(4);
     expect(mockPrisma.usageRecord.upsert).toHaveBeenCalledWith({
       where: {
-        userId_month: {
+        userId_day: {
           userId: 'user-1',
-          month: '2026-02',
+          day: '2026-02-15',
         },
       },
       update: {
@@ -98,14 +98,14 @@ describe('UsageService', () => {
       },
       create: {
         userId: 'user-1',
-        month: '2026-02',
+        day: '2026-02-15',
         count: 1,
       },
     });
   });
 
-  it('uses current month when incrementing without explicit month', async () => {
-    jest.spyOn(UsageService, 'getCurrentMonth').mockReturnValue('2026-03');
+  it('uses current day when incrementing without explicit day', async () => {
+    jest.spyOn(UsageService, 'getCurrentDay').mockReturnValue('2026-03-01');
     mockPrisma.usageRecord.upsert.mockResolvedValue({ count: 1 });
 
     await UsageService.incrementUsage('user-1');
@@ -113,9 +113,9 @@ describe('UsageService', () => {
     expect(mockPrisma.usageRecord.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          userId_month: {
+          userId_day: {
             userId: 'user-1',
-            month: '2026-03',
+            day: '2026-03-01',
           },
         },
       })

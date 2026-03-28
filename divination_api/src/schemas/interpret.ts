@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { UserTierSchema } from './auth';
 
 // Spread type enum
-export const SpreadTypeSchema = z.enum(['THREE_CARD', 'CELTIC_CROSS', 'ONE_CARD', 'CUSTOM']);
+export const SpreadTypeSchema = z.enum(['THREE_CARD', 'CELTIC_CROSS']);
 
 // Card data for interpretation
 export const InterpretationCardSchema = z.object({
